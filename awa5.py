@@ -55,8 +55,8 @@ class Bubble:
     def is_double(self):
         return isinstance(self.data, list)
 
-    def print(self):
-        string = ""
+    # def print(self):
+    #     string = ""
 
     def __str__(self) -> str:
         if self.is_double():
@@ -136,14 +136,13 @@ class AwaVM:
                     data = None
             ir.append((op, data))
 
-    @classmethod
-    def read_program(cls, raw_program_text: str):
+    def read_program(self, raw_program_text: str):
         checksum = raw_program_text[:3]
         program_data_raw = raw_program_text[3:]
         assert checksum == "awa"
         assert len(program_data_raw) % 2 == 0
-        binary_data = cls.decode_awa_to_binary_awa(raw_program_text)
-        program_data = cls.decode_binary_awa_to_awa_ir(binary_data)
+        binary_data = AwaVM.decode_awa_to_binary_awa(raw_program_text)
+        program_data = AwaVM.decode_binary_awa_to_awa_ir(binary_data)
         return program_data
 
     # def print_bubble(bubble):
@@ -199,6 +198,9 @@ class AwaVM:
                     bub1,bub2 = self.abyss.pop(),self.abyss.pop()
                     self.abyss.append(bub1 * bub2)
 
+    def run_program(self, raw_program):
+        ir = AwaVM.read_program(raw_program)
+        self.execute_ir(ir)
 
 
 
@@ -219,6 +221,10 @@ def main(argv: list[str]):
             raw_input = file.read()
     except FileNotFoundError:
         raw_input = ""
+
+    vm = AwaVM
+
+    vm.run_program(raw_program_text)
 
 
 if __name__ == "__main__":
