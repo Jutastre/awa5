@@ -4,14 +4,22 @@ import sys
 import itertools
 import copy
 
+DEBUG = True
+
 AwaSCII_LOOKUP = "AWawJELYHOSIUMjelyhosiumPCNTpcntBDFGRbdfgr0123456789 .,!'()~_/;\n"
+
 
 def AwaSCII_to_string(number) -> str:
     return AwaSCII_LOOKUP[number]
-def char_to_AwaSCII(char:str) -> int:
+
+
+def char_to_AwaSCII(char: str) -> int:
     return AwaSCII_LOOKUP.find(char)
-def string_to_AwaSCII(string:str) -> list[int]:
+
+
+def string_to_AwaSCII(string: str) -> list[int]:
     return [char_to_AwaSCII(char) for char in string]
+
 
 def binary_string_to_int(string: str) -> int:
     total = 0
@@ -70,7 +78,22 @@ class Bubble:
         else:
             self.data = [
                 d1 * d2
-                for d1, d2 in itertools.zip_longest(self.data, other.data, fillvalue=0)
+                for d1, d2 in itertools.zip_longest(self.data, other.data, fillvalue=1)
+            ]
+        return self
+
+    def __div__(self, other: Bubble):
+        if not self.is_double() and not other.is_double():
+            return Bubble(self.data // other.data)
+        elif self.is_double() != other.is_double():
+            if other.is_double():
+                self, other = other, self
+            simple = other.data
+            self.data = [d1 // simple for d1 in self.data]
+        else:
+            self.data = [
+                d1 // d2
+                for d1, d2 in itertools.zip_longest(self.data, other.data, fillvalue=1)
             ]
         return self
 
@@ -175,31 +198,33 @@ class AwaVM:
         if bubble.is_double():
             self.abyss += bubble.data
 
-
     def execute_ir(self, awa_ir):
         assert awa_ir
         program_counter = 0
         while program_counter < len(awa_ir):
             instruction, data = awa_ir[program_counter]
-            print(f"Executing instruction #{program_counter} [{instruction}] with data [{data}]...")
+            if DEBUG:
+                print(
+                    f"Executing instruction #{program_counter} [{instruction}] with data [{data}]..."
+                )
             match instruction:
                 case 0x00:
                     pass
                 case 0x01:
                     bubble = self.abyss.pop()
-                    print(str(bubble))
+                    print(str(bubble), "")
                 case 0x02:
                     bubble = self.abyss.pop()
-                    print(repr(bubble))
+                    print(repr(bubble), "")
                 case 0x03:
-                    input_string = input()          #TO BE FIXED
+                    input_string = input()  # TO BE FIXED
                     decoded = string_to_AwaSCII(input_string)
                     for value in decoded:
                         self.abyss.append(Bubble(value))
                 case 0x04:
-                    input_string = input()          #TO BE FIXED
+                    input_string = input()  # TO BE FIXED
                     while not input_string.isnumeric():
-                        input_string = input_string[:-1] #THIS IS DUMB
+                        input_string = input_string[:-1]  # THIS IS DUMB
                     self.abyss.append(Bubble(int(input_string)))
                 case 0x05:
                     self.abyss.append(Bubble(data))
@@ -239,17 +264,23 @@ class AwaVM:
                             program_counter = location_idx
                             continue
                 case 0x12:
-                    assert len(self.abyss) >= 2
+                    if len(self.abyss) < 2:
+                        program_counter += 2
+                        continue
                     if not self.abyss[0].data == self.abyss[1].data:
                         program_counter += 2
                         continue
                 case 0x13:
-                    assert len(self.abyss) >= 2
+                    if len(self.abyss) < 2:
+                        program_counter += 2
+                        continue
                     if not self.abyss[0].data < self.abyss[1].data:
                         program_counter += 2
                         continue
                 case 0x14:
-                    assert len(self.abyss) >= 2
+                    if len(self.abyss) < 2:
+                        program_counter += 2
+                        continue
                     if not self.abyss[0].data > self.abyss[1].data:
                         program_counter += 2
                         continue
@@ -269,7 +300,7 @@ def main(argv: list[str]):
         filename = "program.🚆"
     try:
         with open(filename) as file:
-            raw_program_text = file.read()
+            raw_program_text = file.read().strip("\n")
     except FileNotFoundError:
         print(f'"{filename}" not found! exiting...')
         quit()
