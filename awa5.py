@@ -82,7 +82,7 @@ class Bubble:
             ]
         return self
 
-    def __div__(self, other: Bubble):
+    def __floordiv__(self, other: Bubble):
         if not self.is_double() and not other.is_double():
             return Bubble(self.data // other.data)
         elif self.is_double() != other.is_double():
@@ -96,6 +96,12 @@ class Bubble:
                 for d1, d2 in itertools.zip_longest(self.data, other.data, fillvalue=1)
             ]
         return self
+
+    def __sizeof__(self) -> int:
+        if self.is_double():
+            return 0
+        else:
+            return len(self.data)
 
     def is_double(self):
         return isinstance(self.data, list)
@@ -183,7 +189,7 @@ class AwaVM:
 
     def read_program(self, raw_program_text: str):
         checksum = raw_program_text[:3].lower()
-        program_data_raw = raw_program_text[3:].lower()
+        program_data_raw = raw_program_text[3:].lower().rstrip()
         assert checksum == "awa"
         assert len(program_data_raw) % 2 == 0
         binary_data = AwaVM.decode_string_to_binary_awa(program_data_raw)
@@ -226,66 +232,73 @@ class AwaVM:
                     while not input_string.isnumeric():
                         input_string = input_string[:-1]  # THIS IS DUMB
                     self.abyss.append(Bubble(int(input_string)))
-                case 0x05:
+                case 0x05: #blow
                     self.abyss.append(Bubble(data))
-                case 0x06:
+                case 0x06: #submerge
                     bubble = self.abyss.pop()
                     if data == 0:
                         self.abyss.insert(0, bubble)
                     else:
                         self.abyss.insert(data * -1, bubble)
-                case 0x07:
+                case 0x07: #pop
                     self.pop_top()
-                case 0x08:
+                case 0x08: #duplicate
                     self.abyss.append(Bubble(copy.deepcopy(self.abyss[-1].data)))
-                case 0x09:
+                case 0x09: #surround
                     bubble = Bubble([])
                     for _ in range(data):
                         bubble.data.append(self.abyss.pop())
                     self.abyss.append(bubble)
-                case 0x0A:
+                case 0x0A: #merge
                     bub1, bub2 = self.abyss.pop(), self.abyss.pop()
                     self.abyss.append(bub1.mrg(bub2))
-                case 0x0B:
+                case 0x0B: #add
                     bub1, bub2 = self.abyss.pop(), self.abyss.pop()
                     self.abyss.append(bub1 + bub2)
-                case 0x0C:
+                case 0x0C: #sub
                     bub1, bub2 = self.abyss.pop(), self.abyss.pop()
                     self.abyss.append(bub1 - bub2)
-                case 0x0C:
+                case 0x0D: #mul
                     bub1, bub2 = self.abyss.pop(), self.abyss.pop()
                     self.abyss.append(bub1 * bub2)
-                case 0x10:
+                case 0x0E: #div
+                    bub1, bub2 = self.abyss.pop(), self.abyss.pop()
+                    self.abyss.append(bub1 // bub2)
+                case 0x0F: #count
+                    self.abyss.append(len(self.abyss[0]))
+                case 0x10: #label
                     pass
-                case 0x11:
+                case 0x11: #jmp
                     for location_idx, ir_tuple in enumerate(awa_ir):
                         instruction2, data2 = ir_tuple
                         if instruction2 == 0x10 and data2 == data:
                             program_counter = location_idx
                             continue
-                case 0x12:
+                case 0x12: #eql
                     if len(self.abyss) < 2:
                         program_counter += 2
                         continue
                     if not self.abyss[0].data == self.abyss[1].data:
                         program_counter += 2
                         continue
-                case 0x13:
+                case 0x13: #gt
                     if len(self.abyss) < 2:
                         program_counter += 2
                         continue
                     if not self.abyss[0].data < self.abyss[1].data:
                         program_counter += 2
                         continue
-                case 0x14:
+                case 0x14: #lt
                     if len(self.abyss) < 2:
                         program_counter += 2
                         continue
                     if not self.abyss[0].data > self.abyss[1].data:
                         program_counter += 2
                         continue
-                case 0x1F:
+                case 0x1F: #exit
                     return
+                case _:
+                    raise Exception
             program_counter += 1
 
     def run_program(self, raw_program):
