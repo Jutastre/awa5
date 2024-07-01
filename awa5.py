@@ -33,9 +33,9 @@ def binary_string_to_int(string: str) -> int:
 class Bubble:
     def __init__(self, data: int | list | Bubble) -> None:
         if isinstance(data, Bubble):
-            self.data = data.data
+            self.data: int | list | Bubble = data.data
         else:
-            self.data = data
+            self.data: int | list | Bubble = data
 
     def __add__(self, other: Bubble):
         if not self.is_double() and not other.is_double():
@@ -115,11 +115,11 @@ class Bubble:
         else:
             return AwaSCII_to_string(self.data)
 
-    def __repr__(self) -> str:
+    def string_as_number(self) -> str:
         if self.is_double():
-            return "".join([repr(sub) for sub in self.data])
+            return " ".join([sub.string_as_number() for sub in self.data])
         else:
-            return AwaSCII_to_string(self.data)
+            return str(self.data) #this might be wrong but doc is hard to interpret
 
     def add(self, other: Bubble):
         if not self.is_double() and not other.is_double():
@@ -221,7 +221,7 @@ class AwaVM:
                     print(str(bubble), "")
                 case 0x02:
                     bubble = self.abyss.pop()
-                    print(repr(bubble), "")
+                    print(bubble.string_as_number(), "")
                 case 0x03:
                     input_string = input()  # TO BE FIXED
                     decoded = string_to_AwaSCII(input_string)
