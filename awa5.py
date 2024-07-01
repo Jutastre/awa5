@@ -6,6 +6,7 @@ import copy
 import re  # OH NO NOT THE REGEX
 
 DEBUG = False
+DEBUG_INGESTION = False
 
 # PATCHES
 SURROUND_ON_SIMPLE_MERGE = True
@@ -29,11 +30,19 @@ def string_to_AwaSCII(string: str) -> list[int]:
 
 def binary_string_to_int(string: str) -> int:
     total = 0
+    negative = False
+    if len(string) == 8:
+        if int(string[0]):
+            negative = True
+        string = string[1:]
     for char in string:
         total *= 2
         if char == "1":
             total += 1
-    return total
+    if negative:
+        return 0 - total
+    else:
+        return total
 
 
 class Bubble:
@@ -129,7 +138,7 @@ class Bubble:
             contents = ",".join([repr(sub) for sub in self.data])
         else:
             contents = str(self.data)
-        return f"B: {contents}"
+        return f"B[{contents}]"
 
     def string_as_number(self: Bubble) -> str:
         if self.is_double():
@@ -171,8 +180,17 @@ class Bubble:
 
 class AwaVM:
 
-    def __init__(self) -> None:
+    def print_wrapper(string: str) -> None:
+        print(string, end="")
+
+    def __init__(
+        self,
+        input_function: function = input,
+        output_function: function = print_wrapper,
+    ) -> None:
         self.abyss: list[Bubble] = []
+        self.input_function = input_function
+        self.output_function = output_function
 
     @staticmethod
     def decode_string_to_binary_awa(awa_string: str) -> list[int]:
@@ -180,6 +198,8 @@ class AwaVM:
         skip = False
         assert len(awa_string) % 2 == 0
         for awa_bit, _ in itertools.batched(awa_string, 2):
+            if DEBUG_INGESTION:
+                print(f"{awa_bit} ", end="")
             if skip:
                 skip = False
                 continue
@@ -192,8 +212,8 @@ class AwaVM:
 
     @staticmethod
     def decode_binary_awa_to_awa_ir(binary: list[int]) -> list:
-        #this is dumb and needs rework
-        #just pass slices instead of making strings
+        # this is dumb and needs rework
+        # just pass slices instead of making strings
         ir = []
         while binary:
             op = binary_string_to_int("".join([str(n) for n in binary[:5]]))  ##UNTESTED
@@ -241,19 +261,18 @@ class AwaVM:
                     pass
                 case 0x01:
                     bubble = self.abyss.pop()
-                    print(str(bubble), end="")
+                    self.output_function(str(bubble))
                 case 0x02:
                     bubble = self.abyss.pop()
-                    print(bubble.string_as_number(), end="")
+                    self.output_function(bubble.string_as_number())
                 case 0x03:
-                    input_string = input()  # TO BE FIXED
+                    input_string = self.input_function()
                     decoded = string_to_AwaSCII(input_string)
-                    for value in decoded:
-                        self.abyss.append(Bubble(value))
+                    self.abyss.append(Bubble([Bubble(value) for value in decoded]))
                 case 0x04:
-                    input_string = input()  # TO BE FIXED
+                    input_string = self.input_function()
                     while not input_string.isnumeric():
-                        input_string = input_string[:-1]  # THIS IS DUMB
+                        input_string = input_string[:-1]  # THIS IS DUMB and wrong
                     self.abyss.append(Bubble(int(input_string)))
                 case 0x05:  # blow
                     self.abyss.append(Bubble(data))
@@ -271,7 +290,7 @@ class AwaVM:
                     bubble = Bubble([])
                     for _ in range(data):
                         bubble.data.append(self.abyss.pop())
-                    self.abyss.append(bubble)
+                    self.abyss.insert(0, bubble)
                 case 0x0A:  # merge
                     bub1, bub2 = self.abyss.pop(), self.abyss.pop()
                     self.abyss.append(bub1.mrg(bub2))
@@ -308,12 +327,16 @@ class AwaVM:
                         self.abyss.append(Bubble(0))
                         program_counter += 1
                         continue
-                    self.abyss.append(Bubble(len(self.abyss[0])))
+                    bubble = self.abyss[0]
+                    if bubble.is_double():
+                        self.abyss.append(Bubble(len(self.abyss[0].data)))
+                    else:
+                        self.abyss.append(Bubble(0))
                 case 0x10:  # label
                     pass
                 case 0x11:  # jmp
-                    for location_idx, ir_tuple in enumerate(awa_ir):
-                        instruction2, data2 = ir_tuple
+                    for location_idx, (instruction2, data2) in enumerate(awa_ir):
+                        # instruction2, data2 = ir_tuple
                         if instruction2 == 0x10 and data2 == data:
                             program_counter = location_idx
                             continue
@@ -321,21 +344,21 @@ class AwaVM:
                     if len(self.abyss) < 2:
                         program_counter += 2
                         continue
-                    if not self.abyss[0].data == self.abyss[1].data:
+                    if not self.abyss[-1].data == self.abyss[-2].data:
                         program_counter += 2
                         continue
                 case 0x13:  # gt
                     if len(self.abyss) < 2:
                         program_counter += 2
                         continue
-                    if not self.abyss[0].data < self.abyss[1].data:
+                    if not self.abyss[-1].data > self.abyss[-2].data:
                         program_counter += 2
                         continue
                 case 0x14:  # lt
                     if len(self.abyss) < 2:
                         program_counter += 2
                         continue
-                    if not self.abyss[0].data > self.abyss[1].data:
+                    if not self.abyss[-1].data < self.abyss[-2].data:
                         program_counter += 2
                         continue
                 case 0x1F:  # exit

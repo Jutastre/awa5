@@ -1,2 +1,3 @@
 *.🌠
 .vscode/*
+__pycache__/*
