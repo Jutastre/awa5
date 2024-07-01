@@ -5,6 +5,7 @@ import itertools
 import copy
 
 DEBUG = True
+SURROUND_ON_SIMPLE_MERGE = True
 
 AwaSCII_LOOKUP = "AWawJELYHOSIUMjelyhosiumPCNTpcntBDFGRbdfgr0123456789 .,!'()~_/;\n"
 
@@ -112,6 +113,14 @@ class Bubble:
         else:
             return AwaSCII_to_string(self.data)
 
+    def __repr__(self) -> str:
+        
+        if self.is_double():
+            contents= ",".join([repr(sub) for sub in self.data])
+        else:
+            contents= str(self.data)
+        return f"B: {contents}"
+
     def string_as_number(self: Bubble) -> str:
         if self.is_double():
             return " ".join([sub.string_as_number() for sub in self.data]) #why is sub any type?
@@ -135,7 +144,10 @@ class Bubble:
 
     def mrg(self, other: Bubble):
         if self.is_double() == other.is_double():  # why am i doing this
-            self.data = self.data + other.data
+            if SURROUND_ON_SIMPLE_MERGE and not self.is_double():
+                return Bubble([self,other])
+            else:
+                self.data = self.data + other.data
         else:
             if self.is_double():
                 self.data.append(other.data)
@@ -262,7 +274,7 @@ class AwaVM:
                     bub1, bub2 = self.abyss.pop(), self.abyss.pop()
                     self.abyss.append(bub1 // bub2)
                 case 0x0F: #count
-                    self.abyss.append(len(self.abyss[0]))
+                    self.abyss.append(Bubble(len(self.abyss[0])))
                 case 0x10: #label
                     pass
                 case 0x11: #jmp
@@ -307,7 +319,7 @@ def main(argv: list[str]):
     if argv:
         filename = argv[-1]
     else:
-        filename = "program.🚆"
+        filename = "program.🌠"
     try:
         with open(filename) as file:
             raw_program_text = file.read().strip("\n")
