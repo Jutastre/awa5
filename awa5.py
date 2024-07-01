@@ -106,18 +106,15 @@ class Bubble:
     def is_double(self):
         return isinstance(self.data, list)
 
-    # def print(self):
-    #     string = ""
-
     def __str__(self) -> str:
         if self.is_double():
             return "".join([str(sub) for sub in self.data])
         else:
             return AwaSCII_to_string(self.data)
 
-    def string_as_number(self) -> str:
+    def string_as_number(self: Bubble) -> str:
         if self.is_double():
-            return " ".join([sub.string_as_number() for sub in self.data])
+            return " ".join([sub.string_as_number() for sub in self.data]) #why is sub any type?
         else:
             return str(self.data) #this might be wrong but doc is hard to interpret
 
