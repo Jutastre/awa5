@@ -3,9 +3,14 @@ from __future__ import annotations
 import sys
 import itertools
 import copy
+import re  # OH NO NOT THE REGEX
 
-DEBUG = True
+DEBUG = False
+
+# PATCHES
 SURROUND_ON_SIMPLE_MERGE = True
+BLOW_ZERO_ON_EMPTY = False
+
 
 AwaSCII_LOOKUP = "AWawJELYHOSIUMjelyhosiumPCNTpcntBDFGRbdfgr0123456789 .,!'()~_/;\n"
 
@@ -33,10 +38,11 @@ def binary_string_to_int(string: str) -> int:
 
 class Bubble:
     def __init__(self, data: int | list | Bubble) -> None:
+        self.data: int | list | Bubble
         if isinstance(data, Bubble):
-            self.data: int | list | Bubble = data.data
+            self.data = data.data
         else:
-            self.data: int | list | Bubble = data
+            self.data = data
 
     def __add__(self, other: Bubble):
         if not self.is_double() and not other.is_double():
@@ -85,7 +91,9 @@ class Bubble:
 
     def __floordiv__(self, other: Bubble):
         if not self.is_double() and not other.is_double():
-            return Bubble(self.data // other.data)
+            return Bubble(
+                [Bubble(self.data % other.data), Bubble(self.data // other.data)]
+            )
         elif self.is_double() != other.is_double():
             if other.is_double():
                 self, other = other, self
@@ -94,7 +102,9 @@ class Bubble:
         else:
             self.data = [
                 d1 // d2
-                for d1, d2 in itertools.zip_longest(self.data, other.data, fillvalue=1)
+                for d1, d2 in itertools.zip_longest(
+                    self.data, other.data, fillvalue=1
+                )  # this isn't correct
             ]
         return self
 
@@ -114,18 +124,20 @@ class Bubble:
             return AwaSCII_to_string(self.data)
 
     def __repr__(self) -> str:
-        
+
         if self.is_double():
-            contents= ",".join([repr(sub) for sub in self.data])
+            contents = ",".join([repr(sub) for sub in self.data])
         else:
-            contents= str(self.data)
+            contents = str(self.data)
         return f"B: {contents}"
 
     def string_as_number(self: Bubble) -> str:
         if self.is_double():
-            return " ".join([sub.string_as_number() for sub in self.data]) #why is sub any type?
+            return " ".join(
+                [sub.string_as_number() for sub in self.data]
+            )  # why is sub any type?
         else:
-            return str(self.data) #this might be wrong but doc is hard to interpret
+            return str(self.data)  # this might be wrong but doc is hard to interpret
 
     def add(self, other: Bubble):
         if not self.is_double() and not other.is_double():
@@ -145,7 +157,7 @@ class Bubble:
     def mrg(self, other: Bubble):
         if self.is_double() == other.is_double():  # why am i doing this
             if SURROUND_ON_SIMPLE_MERGE and not self.is_double():
-                return Bubble([self,other])
+                return Bubble([self, other])
             else:
                 self.data = self.data + other.data
         else:
@@ -180,6 +192,8 @@ class AwaVM:
 
     @staticmethod
     def decode_binary_awa_to_awa_ir(binary: list[int]) -> list:
+        #this is dumb and needs rework
+        #just pass slices instead of making strings
         ir = []
         while binary:
             op = binary_string_to_int("".join([str(n) for n in binary[:5]]))  ##UNTESTED
@@ -197,6 +211,9 @@ class AwaVM:
         return ir
 
     def read_program(self, raw_program_text: str):
+        # I DIDNT wANNA USe REGEX I SWEAR
+        raw_program_text = re.sub("[^AWaw ]", "", raw_program_text)
+        raw_program_text = re.sub("  ", " ", raw_program_text)
         checksum = raw_program_text[:3].lower()
         program_data_raw = raw_program_text[3:].lower().rstrip()
         assert checksum == "awa"
@@ -204,9 +221,6 @@ class AwaVM:
         binary_data = AwaVM.decode_string_to_binary_awa(program_data_raw)
         program_data_ir = AwaVM.decode_binary_awa_to_awa_ir(binary_data)
         return program_data_ir
-
-    # def print_bubble(bubble):
-    #     pass
 
     def pop_top(self):
         bubble = self.abyss.pop()
@@ -227,10 +241,10 @@ class AwaVM:
                     pass
                 case 0x01:
                     bubble = self.abyss.pop()
-                    print(str(bubble), "")
+                    print(str(bubble), end="")
                 case 0x02:
                     bubble = self.abyss.pop()
-                    print(bubble.string_as_number(), "")
+                    print(bubble.string_as_number(), end="")
                 case 0x03:
                     input_string = input()  # TO BE FIXED
                     decoded = string_to_AwaSCII(input_string)
@@ -241,70 +255,90 @@ class AwaVM:
                     while not input_string.isnumeric():
                         input_string = input_string[:-1]  # THIS IS DUMB
                     self.abyss.append(Bubble(int(input_string)))
-                case 0x05: #blow
+                case 0x05:  # blow
                     self.abyss.append(Bubble(data))
-                case 0x06: #submerge
+                case 0x06:  # submerge
                     bubble = self.abyss.pop()
                     if data == 0:
                         self.abyss.insert(0, bubble)
                     else:
                         self.abyss.insert(data * -1, bubble)
-                case 0x07: #pop
+                case 0x07:  # pop
                     self.pop_top()
-                case 0x08: #duplicate
+                case 0x08:  # duplicate
                     self.abyss.append(Bubble(copy.deepcopy(self.abyss[-1].data)))
-                case 0x09: #surround
+                case 0x09:  # surround
                     bubble = Bubble([])
                     for _ in range(data):
                         bubble.data.append(self.abyss.pop())
                     self.abyss.append(bubble)
-                case 0x0A: #merge
+                case 0x0A:  # merge
                     bub1, bub2 = self.abyss.pop(), self.abyss.pop()
                     self.abyss.append(bub1.mrg(bub2))
-                case 0x0B: #add
+                case 0x0B:  # add
+                    if len(self.abyss) < 2 and BLOW_ZERO_ON_EMPTY:
+                        self.abyss.append(Bubble(0))
+                        program_counter += 1
+                        continue
                     bub1, bub2 = self.abyss.pop(), self.abyss.pop()
                     self.abyss.append(bub1 + bub2)
-                case 0x0C: #sub
+                case 0x0C:  # sub
+                    if len(self.abyss) < 2 and BLOW_ZERO_ON_EMPTY:
+                        self.abyss.append(Bubble(0))
+                        program_counter += 1
+                        continue
                     bub1, bub2 = self.abyss.pop(), self.abyss.pop()
                     self.abyss.append(bub1 - bub2)
-                case 0x0D: #mul
+                case 0x0D:  # mul
+                    if len(self.abyss) < 2 and BLOW_ZERO_ON_EMPTY:
+                        self.abyss.append(Bubble(0))
+                        program_counter += 1
+                        continue
                     bub1, bub2 = self.abyss.pop(), self.abyss.pop()
                     self.abyss.append(bub1 * bub2)
-                case 0x0E: #div
+                case 0x0E:  # div
+                    if len(self.abyss) < 2 and BLOW_ZERO_ON_EMPTY:
+                        self.abyss.append(Bubble(0))
+                        program_counter += 1
+                        continue
                     bub1, bub2 = self.abyss.pop(), self.abyss.pop()
                     self.abyss.append(bub1 // bub2)
-                case 0x0F: #count
+                case 0x0F:  # count
+                    if len(self.abyss) < 1 and BLOW_ZERO_ON_EMPTY:
+                        self.abyss.append(Bubble(0))
+                        program_counter += 1
+                        continue
                     self.abyss.append(Bubble(len(self.abyss[0])))
-                case 0x10: #label
+                case 0x10:  # label
                     pass
-                case 0x11: #jmp
+                case 0x11:  # jmp
                     for location_idx, ir_tuple in enumerate(awa_ir):
                         instruction2, data2 = ir_tuple
                         if instruction2 == 0x10 and data2 == data:
                             program_counter = location_idx
                             continue
-                case 0x12: #eql
+                case 0x12:  # eql
                     if len(self.abyss) < 2:
                         program_counter += 2
                         continue
                     if not self.abyss[0].data == self.abyss[1].data:
                         program_counter += 2
                         continue
-                case 0x13: #gt
+                case 0x13:  # gt
                     if len(self.abyss) < 2:
                         program_counter += 2
                         continue
                     if not self.abyss[0].data < self.abyss[1].data:
                         program_counter += 2
                         continue
-                case 0x14: #lt
+                case 0x14:  # lt
                     if len(self.abyss) < 2:
                         program_counter += 2
                         continue
                     if not self.abyss[0].data > self.abyss[1].data:
                         program_counter += 2
                         continue
-                case 0x1F: #exit
+                case 0x1F:  # exit
                     return
                 case _:
                     raise Exception

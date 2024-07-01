@@ -1,0 +1,8 @@
+unclear/undefined behaviour that maybe should be defined:
+
+SURROUND_ON_SIMPLE_MERGE
+
+count and comparisons with empty/too short abyss
+
+does print num print numbers? why does it mention AwaSCII?
+also 'pops them all' is slightly ambigous
