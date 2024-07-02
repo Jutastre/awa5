@@ -17,7 +17,7 @@ import re  # oops i did it again
 def main(argv: list[str]):
     if not argv:
         print("Usage: python3 ir_to_awa.py input [output]")
-
+        quit()
     filename = argv[0]
     try:
         with open(filename) as file:
