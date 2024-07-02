@@ -28,22 +28,6 @@ def string_to_AwaSCII(string: str) -> list[int]:
     return [char_to_AwaSCII(char) for char in string]
 
 
-def binary_string_to_int(string: str) -> int:
-    total = 0
-    negative = False
-    if len(string) == 8:
-        if int(string[0]):
-            negative = True
-        string = string[1:]
-    for char in string:
-        total *= 2
-        if char == "1":
-            total += 1
-    if negative:
-        return 0 - total
-    else:
-        return total
-
 
 class Bubble:
     def __init__(self, data: int | list | Bubble) -> None:
@@ -193,42 +177,44 @@ class AwaVM:
         self.output_function = output_function
 
     @staticmethod
-    def decode_string_to_binary_awa(awa_string: str) -> list[int]:
-        binary_awa = []
-        skip = False
-        assert len(awa_string) % 2 == 0
-        for awa_bit, _ in itertools.batched(awa_string, 2):
-            if DEBUG_INGESTION:
-                print(f"{awa_bit} ", end="")
-            if skip:
-                skip = False
-                continue
-            if awa_bit == " ":
-                binary_awa.append(0)
-                skip = True
-            else:
-                binary_awa.append(1)
-        return binary_awa
-
+    def _binary_string_to_int(string: str) -> int:
+        total = 0
+        negative = False
+        if len(string) == 8:
+            if int(string[0]):
+                negative = True
+            string = string[1:]
+        for char in string:
+            total *= 2
+            if char == "1":
+                total += 1
+        if negative:
+            return 0 - total
+        else:
+            return total
+        
     @staticmethod
-    def decode_binary_awa_to_awa_ir(binary: list[int]) -> list:
-        # this is dumb and needs rework
-        # just pass slices instead of making strings
+    def _awa_string_to_binary_string(awa_string: str) -> list[int]:
+        return re.sub('wa', '1', re.sub(' awa', '0', awa_string))
+    
+    @staticmethod
+    def _binary_string_to_ir(binary: list[int]) -> list:
         ir = []
         while binary:
-            op = binary_string_to_int("".join([str(n) for n in binary[:5]]))  ##UNTESTED
+            op = AwaVM._binary_string_to_int(binary[:5])  ##UNTESTED
             binary = binary[5:]
             match op:
                 case 0x5:
-                    data = binary_string_to_int("".join([str(n) for n in binary[:8]]))
+                    data = AwaVM._binary_string_to_int(binary[:8])
                     binary = binary[8:]
                 case 0x6 | 0x9 | 0x10 | 0x11:
-                    data = binary_string_to_int("".join([str(n) for n in binary[:5]]))
+                    data = AwaVM._binary_string_to_int(binary[:5])
                     binary = binary[5:]
                 case _:
                     data = None
             ir.append((op, data))
         return ir
+
 
     def read_program(self, raw_program_text: str):
         # I DIDNT wANNA USe REGEX I SWEAR
@@ -238,8 +224,10 @@ class AwaVM:
         program_data_raw = raw_program_text[3:].lower().rstrip()
         assert checksum == "awa"
         assert len(program_data_raw) % 2 == 0
-        binary_data = AwaVM.decode_string_to_binary_awa(program_data_raw)
-        program_data_ir = AwaVM.decode_binary_awa_to_awa_ir(binary_data)
+        #binary_data = AwaVM.decode_string_to_binary_awa(program_data_raw)
+        #program_data_ir = AwaVM.decode_binary_awa_to_awa_ir(binary_data)
+        binary_data = AwaVM._awa_string_to_binary_string(program_data_raw)
+        program_data_ir = AwaVM._binary_string_to_ir(binary_data)
         return program_data_ir
 
     def pop_top(self):
