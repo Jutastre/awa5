@@ -2,7 +2,7 @@
 from __future__ import annotations
 import itertools
 
-from awa5 import AwaVM
+from awa5 import AwaVM, MalformedCodeException, UnknownInstructionException
 
 ANSI_WHITE = "\033[0m"
 ANSI_RED = "\033[31m"
@@ -49,14 +49,20 @@ def run_tests(testcases: list) -> None:
         output_buffer = ""
         input_buffer = input
 
-        vm = AwaVM(
-            output_function=test_output_function, input_function=test_input_function
-        )
-        vm.run_program(code)
+        try:
+            vm = AwaVM(
+                output_function=test_output_function, input_function=test_input_function
+            )
+            vm.run_program(code)
+        except MalformedCodeException as exception:
+            output_buffer == f"MalformedCodeException({exception.__cause__})"
+        except UnknownInstructionException as exception:
+            output_buffer == f"UnknownInstructionException({exception.__cause__})"
 
         passed = output_buffer.strip("\n") == expected_output
         print(f"Test #{test_idx + 1}: {PASS_STRING if passed else FAIL_STRING}")
         if not passed:
+            print(f"Test: {test_label}")
             print(f"Expected: {expected_output}")
             print(f"Got: {output_buffer}")
 

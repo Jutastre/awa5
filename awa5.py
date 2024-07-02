@@ -5,8 +5,8 @@ import itertools
 import copy
 import re  # OH NO NOT THE REGEX
 
-#TODO: input from file
-#TODO: negative number handling, both in and out
+# TODO: input from file
+# TODO: negative number handling, both in and out
 
 
 DEBUG = False
@@ -67,6 +67,11 @@ class Bubble:
         return self
 
     def __mul__(self, other: Bubble):
+        if self.data == 1: #identity shortcuts
+            return other
+        if other.data == 1:
+            return self
+        
         if not self.is_double() and not other.is_double():
             return Bubble(self.data * other.data)
         elif self.is_double() != other.is_double():
@@ -77,8 +82,8 @@ class Bubble:
         else:
             self.data = [
                 d1 * d2
-                for d1, d2 in itertools.zip_longest(self.data, other.data, fillvalue=1)
-            ]
+                for d1, d2 in itertools.zip_longest(reversed(self.data), reversed(other.data), fillvalue=1)
+            ].reverse() #think these reverses fixes order
         return self
 
     def __floordiv__(self, other: Bubble):
@@ -96,7 +101,7 @@ class Bubble:
                 d1 // d2
                 for d1, d2 in itertools.zip_longest(
                     self.data, other.data, fillvalue=1
-                )  # this isn't correct
+                )  # this isn't correct #actually this is super wrong because of reversed bubble order internally
             ]
         return self
 
