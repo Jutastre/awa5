@@ -379,7 +379,7 @@ def main(argv: list[str]):
         filename = "program.🌠"
     try:
         with open(filename) as file:
-            raw_program_text = file.read().strip("\n")
+            raw_program_text = file.read().strip()
     except FileNotFoundError:
         print(f'"{filename}" not found! exiting...')
         quit()
