@@ -384,11 +384,12 @@ def main(argv: list[str]):
         print(f'"{filename}" not found! exiting...')
         quit()
 
-    try:
-        with open("input") as file:
-            raw_input = file.read()
-    except FileNotFoundError:
-        raw_input = ""
+    ## TODO: input from file
+    # try:
+    #     with open("input") as file:
+    #         raw_input = file.read()
+    # except FileNotFoundError:
+    #     raw_input = ""
 
     vm = AwaVM()
 
