@@ -16,6 +16,14 @@ BLOW_ZERO_ON_EMPTY = False
 AwaSCII_LOOKUP = "AWawJELYHOSIUMjelyhosiumPCNTpcntBDFGRbdfgr0123456789 .,!'()~_/;\n"
 
 
+class MalformedCodeException(Exception):
+    pass
+
+
+class UnknownInstructionException(Exception):
+    pass
+
+
 class Bubble:
     def __init__(self, data: int | list | Bubble) -> None:
         self.data: int | list | Bubble
@@ -99,7 +107,7 @@ class Bubble:
 
     def __str__(self) -> str:
         if self.is_double():
-            return "".join([str(sub) for sub in self.data])
+            return "".join(reversed([str(sub) for sub in self.data]))
         else:
             return AwaVM._AwaSCII_to_string(self.data)
 
@@ -114,7 +122,7 @@ class Bubble:
     def string_as_number(self: Bubble) -> str:
         if self.is_double():
             return " ".join(
-                [sub.string_as_number() for sub in self.data]
+                reversed([sub.string_as_number() for sub in self.data])
             )  # why is sub any type?
         else:
             return str(self.data)  # this might be wrong but doc is hard to interpret
@@ -218,11 +226,19 @@ class AwaVM:
     def _awa_string_to_ir(raw_program_text: str):
         # I DIDNT wANNA USe REGEX I SWEAR
         raw_program_text = re.sub("[^AWaw ]", "", raw_program_text)
-        raw_program_text = re.sub("  ", " ", raw_program_text)
         checksum = raw_program_text[:3].lower()
         program_data_raw = raw_program_text[3:].lower().rstrip()
         assert checksum == "awa"
-        assert len(program_data_raw) % 2 == 0
+        if len(program_data_raw) % 2 != 0:
+            raise MalformedCodeException(f"Code length mismatch")
+        if "  " in raw_program_text:
+            raise MalformedCodeException(
+                f"'  ' found in input at location {raw_program_text.find('  ')} (after non-awatalk has been discarded)"
+            )
+        if " wa" in raw_program_text:
+            raise MalformedCodeException(
+                f"' wa' found in input at location {raw_program_text.find(' wa')} (after non-awatalk has been discarded)"
+            )
         binary_data = AwaVM._awa_string_to_binary_string(program_data_raw)
         program_data_ir = AwaVM._binary_string_to_ir(binary_data)
         return program_data_ir
@@ -274,7 +290,7 @@ class AwaVM:
                 case 0x09:  # surround
                     bubble = Bubble([])
                     for _ in range(data):
-                        bubble.data.append(self.abyss.pop())
+                        bubble.data.insert(0, self.abyss.pop())
                     self.abyss.insert(0, bubble)
                 case 0x0A:  # merge
                     bub1, bub2 = self.abyss.pop(), self.abyss.pop()
@@ -348,7 +364,9 @@ class AwaVM:
                 case 0x1F:  # exit
                     return
                 case _:
-                    raise Exception
+                    raise UnknownInstructionException(
+                        f"Instruction {f'{instruction:#2X}'.replace('0X', '0x')} not recognized"
+                    )
             program_counter += 1
 
     def run_program(self, raw_program):
@@ -374,9 +392,7 @@ def main(argv: list[str]):
     #         raw_input = file.read()
     # except FileNotFoundError:
     #     raw_input = ""
-
     vm = AwaVM()
-
     vm.run_program(raw_program=raw_program_text)
 
 

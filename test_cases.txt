@@ -1,3 +1,11 @@
+print two numbers in a double bubble:
+awa awa awawa awawa awa awa awa awawa awawa awa awa awawa awawa awa awa awa awawa awawa awa awawa awa awawa awa awa awawa awa awa awa awawa awa:
+:
+10 10:
+test division 7/2:
+awa awa awawa awawa awa awa awa awa awa awawa awa awa awawa awawa awa awa awa awa awawawawa awawawawa awa awa awa awawa awa:
+:
+3 1:
 print awa (example code from esolang wiki):
 Awa awa awawa awawa awa awa awa awa awa awawa awa awa awawa awawa awa awa awa awa awa awawawa awa awawa awawa awa awa awa awa awa awa awa awa awawa awa awawa awa awa awawawa awa awa awa awawa:
 :
