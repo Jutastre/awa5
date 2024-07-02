@@ -25,7 +25,8 @@ def test_input_function():
     global input_buffer
     return input_buffer
 
-def load_tests(filename:str) -> list:
+
+def load_tests(filename: str) -> list:
     with open(filename) as file:
         testcases = [
             (
@@ -40,14 +41,17 @@ def load_tests(filename:str) -> list:
         ]
     return testcases
 
-def run_tests(testcases:list) -> None:
+
+def run_tests(testcases: list) -> None:
     global input_buffer, output_buffer
 
     for test_idx, (test_label, code, input, expected_output) in enumerate(testcases):
         output_buffer = ""
         input_buffer = input
 
-        vm = AwaVM(output_function=test_output_function, input_function=test_input_function)
+        vm = AwaVM(
+            output_function=test_output_function, input_function=test_input_function
+        )
         vm.run_program(code)
 
         passed = output_buffer.strip("\n") == expected_output
@@ -56,7 +60,8 @@ def run_tests(testcases:list) -> None:
             print(f"Expected: {expected_output}")
             print(f"Got: {output_buffer}")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
 
     tests = load_tests("test_cases.txt")
 
