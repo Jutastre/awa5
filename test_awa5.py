@@ -36,7 +36,7 @@ def load_tests(filename: str) -> list:
                 expected_output.strip("\n"),
             )
             for test_label, code, input, expected_output in itertools.batched(
-                file.read().split("!")[:-1], 4
+                file.read().split(":")[:-1], 4
             )
         ]
     return testcases
