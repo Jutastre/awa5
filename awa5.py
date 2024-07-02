@@ -101,7 +101,7 @@ class Bubble:
         if self.is_double():
             return "".join([str(sub) for sub in self.data])
         else:
-            return AwaSCII_to_string(self.data)
+            return AwaVM._AwaSCII_to_string(self.data)
 
     def __repr__(self) -> str:
 
