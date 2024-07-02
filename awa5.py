@@ -5,6 +5,10 @@ import itertools
 import copy
 import re  # OH NO NOT THE REGEX
 
+#TODO: input from file
+#TODO: negative number handling, both in and out
+
+
 DEBUG = False
 DEBUG_INGESTION = False
 
