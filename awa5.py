@@ -16,19 +16,6 @@ BLOW_ZERO_ON_EMPTY = False
 AwaSCII_LOOKUP = "AWawJELYHOSIUMjelyhosiumPCNTpcntBDFGRbdfgr0123456789 .,!'()~_/;\n"
 
 
-def AwaSCII_to_string(number) -> str:
-    return AwaSCII_LOOKUP[number]
-
-
-def char_to_AwaSCII(char: str) -> int:
-    return AwaSCII_LOOKUP.find(char)
-
-
-def string_to_AwaSCII(string: str) -> list[int]:
-    return [char_to_AwaSCII(char) for char in string]
-
-
-
 class Bubble:
     def __init__(self, data: int | list | Bubble) -> None:
         self.data: int | list | Bubble
@@ -177,6 +164,18 @@ class AwaVM:
         self.output_function = output_function
 
     @staticmethod
+    def _AwaSCII_to_string(number) -> str:
+        return AwaSCII_LOOKUP[number]
+
+    @staticmethod
+    def _char_to_AwaSCII(char: str) -> int:
+        return AwaSCII_LOOKUP.find(char)
+
+    @staticmethod
+    def _string_to_AwaSCII(string: str) -> list[int]:
+        return [AwaVM._char_to_AwaSCII(char) for char in string]
+
+    @staticmethod
     def _binary_string_to_int(string: str) -> int:
         total = 0
         negative = False
@@ -192,11 +191,11 @@ class AwaVM:
             return 0 - total
         else:
             return total
-        
+
     @staticmethod
     def _awa_string_to_binary_string(awa_string: str) -> list[int]:
-        return re.sub('wa', '1', re.sub(' awa', '0', awa_string))
-    
+        return re.sub("wa", "1", re.sub(" awa", "0", awa_string))
+
     @staticmethod
     def _binary_string_to_ir(binary: list[int]) -> list:
         ir = []
@@ -215,8 +214,8 @@ class AwaVM:
             ir.append((op, data))
         return ir
 
-
-    def read_program(self, raw_program_text: str):
+    @staticmethod
+    def _awa_string_to_ir(raw_program_text: str):
         # I DIDNT wANNA USe REGEX I SWEAR
         raw_program_text = re.sub("[^AWaw ]", "", raw_program_text)
         raw_program_text = re.sub("  ", " ", raw_program_text)
@@ -224,13 +223,11 @@ class AwaVM:
         program_data_raw = raw_program_text[3:].lower().rstrip()
         assert checksum == "awa"
         assert len(program_data_raw) % 2 == 0
-        #binary_data = AwaVM.decode_string_to_binary_awa(program_data_raw)
-        #program_data_ir = AwaVM.decode_binary_awa_to_awa_ir(binary_data)
         binary_data = AwaVM._awa_string_to_binary_string(program_data_raw)
         program_data_ir = AwaVM._binary_string_to_ir(binary_data)
         return program_data_ir
 
-    def pop_top(self):
+    def _pop_top(self):
         bubble = self.abyss.pop()
         if bubble.is_double():
             self.abyss += bubble.data
@@ -255,7 +252,7 @@ class AwaVM:
                     self.output_function(bubble.string_as_number())
                 case 0x03:
                     input_string = self.input_function()
-                    decoded = string_to_AwaSCII(input_string)
+                    decoded = AwaVM.string_to_AwaSCII(input_string)
                     self.abyss.append(Bubble([Bubble(value) for value in decoded]))
                 case 0x04:
                     input_string = self.input_function()
@@ -271,7 +268,7 @@ class AwaVM:
                     else:
                         self.abyss.insert(data * -1, bubble)
                 case 0x07:  # pop
-                    self.pop_top()
+                    self._pop_top()
                 case 0x08:  # duplicate
                     self.abyss.append(Bubble(copy.deepcopy(self.abyss[-1].data)))
                 case 0x09:  # surround
@@ -324,7 +321,6 @@ class AwaVM:
                     pass
                 case 0x11:  # jmp
                     for location_idx, (instruction2, data2) in enumerate(awa_ir):
-                        # instruction2, data2 = ir_tuple
                         if instruction2 == 0x10 and data2 == data:
                             program_counter = location_idx
                             continue
@@ -356,7 +352,7 @@ class AwaVM:
             program_counter += 1
 
     def run_program(self, raw_program):
-        ir = self.read_program(raw_program)
+        ir = AwaVM._awa_string_to_ir(raw_program)
         self.execute_ir(ir)
 
 
