@@ -27,6 +27,8 @@ class MalformedCodeException(Exception):
 class UnknownInstructionException(Exception):
     pass
 
+class AwaRuntimeError(Exception):
+    pass
 
 class Bubble:
     def __init__(self, data: int | list | Bubble) -> None:
@@ -318,38 +320,53 @@ class AwaVM:
                     bub1, bub2 = self.abyss.pop(), self.abyss.pop()
                     self.abyss.append(bub1.mrg(bub2))
                 case 0x0B:  # add
-                    if len(self.abyss) < 2 and BLOW_ZERO_ON_EMPTY:
-                        self.abyss.append(Bubble(0))
-                        program_counter += 1
-                        continue
+                    if len(self.abyss) < 2:
+                        if BLOW_ZERO_ON_EMPTY:
+                            self.abyss.append(Bubble(0))
+                            program_counter += 1
+                            continue
+                        else:
+                            raise AwaRuntimeError(f"Tried to execute {f'{instruction:#2X}'.replace('0X', '0x')} but less than 2 bubbles were in the abyss")
                     bub1, bub2 = self.abyss.pop(), self.abyss.pop()
                     self.abyss.append(bub1 + bub2)
                 case 0x0C:  # sub
-                    if len(self.abyss) < 2 and BLOW_ZERO_ON_EMPTY:
-                        self.abyss.append(Bubble(0))
-                        program_counter += 1
-                        continue
+                    if len(self.abyss) < 2:
+                        if BLOW_ZERO_ON_EMPTY:
+                            self.abyss.append(Bubble(0))
+                            program_counter += 1
+                            continue
+                        else:
+                            raise AwaRuntimeError(f"Tried to execute {f'{instruction:#2X}'.replace('0X', '0x')} but less than 2 bubbles were in the abyss")
                     bub1, bub2 = self.abyss.pop(), self.abyss.pop()
                     self.abyss.append(bub1 - bub2)
                 case 0x0D:  # mul
-                    if len(self.abyss) < 2 and BLOW_ZERO_ON_EMPTY:
-                        self.abyss.append(Bubble(0))
-                        program_counter += 1
-                        continue
+                    if len(self.abyss) < 2:
+                        if BLOW_ZERO_ON_EMPTY:
+                            self.abyss.append(Bubble(0))
+                            program_counter += 1
+                            continue
+                        else:
+                            raise AwaRuntimeError(f"Tried to execute {f'{instruction:#2X}'.replace('0X', '0x')} but less than 2 bubbles were in the abyss")
                     bub1, bub2 = self.abyss.pop(), self.abyss.pop()
                     self.abyss.append(bub1 * bub2)
                 case 0x0E:  # div
-                    if len(self.abyss) < 2 and BLOW_ZERO_ON_EMPTY:
-                        self.abyss.append(Bubble(0))
-                        program_counter += 1
-                        continue
+                    if len(self.abyss) < 2:
+                        if BLOW_ZERO_ON_EMPTY:
+                            self.abyss.append(Bubble(0))
+                            program_counter += 1
+                            continue
+                        else:
+                            raise AwaRuntimeError(f"Tried to execute {f'{instruction:#2X}'.replace('0X', '0x')} but less than 2 bubbles were in the abyss")
                     bub1, bub2 = self.abyss.pop(), self.abyss.pop()
                     self.abyss.append(bub1 // bub2)
                 case 0x0F:  # count
-                    if len(self.abyss) < 1 and BLOW_ZERO_ON_EMPTY:
-                        self.abyss.append(Bubble(0))
-                        program_counter += 1
-                        continue
+                    if len(self.abyss) < 1:
+                        if BLOW_ZERO_ON_EMPTY:
+                            self.abyss.append(Bubble(0))
+                            program_counter += 1
+                            continue
+                        else:
+                            raise AwaRuntimeError(f"Tried to execute {f'{instruction:#2X}'.replace('0X', '0x')} but abyss was empty")
                     bubble = self.abyss[0]
                     if bubble.is_double():
                         self.abyss.append(Bubble(len(self.abyss[0].data)))
@@ -361,7 +378,9 @@ class AwaVM:
                     for location_idx, (instruction2, data2) in enumerate(awa_ir):
                         if instruction2 == 0x10 and data2 == data:
                             program_counter = location_idx
-                            continue
+                            break
+                    else:
+                        raise AwaRuntimeError(f"Tried to jump to label {data} but it wasn't found")
                 case 0x12:  # eql
                     if len(self.abyss) < 2:
                         program_counter += 2
