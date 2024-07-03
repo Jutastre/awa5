@@ -2,7 +2,7 @@
 from __future__ import annotations
 import itertools
 
-from awa5 import AwaVM, MalformedCodeException, UnknownInstructionException
+from awa5 import AwaVM, MalformedCodeException, UnknownInstructionException, AwaRuntimeError
 
 ANSI_WHITE = "\033[0m"
 ANSI_RED = "\033[31m"
@@ -58,6 +58,8 @@ def run_tests(testcases: list) -> None:
             output_buffer == f"MalformedCodeException({exception.__cause__})"
         except UnknownInstructionException as exception:
             output_buffer == f"UnknownInstructionException({exception.__cause__})"
+        except AwaRuntimeError as exception:
+            output_buffer == f"AwaRuntimeError({exception.__cause__})"
 
         passed = output_buffer.strip("\n") == expected_output
         print(f"Test #{test_idx + 1}: {PASS_STRING if passed else FAIL_STRING}")
