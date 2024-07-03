@@ -32,7 +32,7 @@ class Bubble:
     def __init__(self, data: int | list | Bubble) -> None:
         self.data: int | list | Bubble
         if isinstance(data, Bubble):
-            self.data = data.data
+            self.data = copy.deepcopy(data.data)
         else:
             self.data = data
 
@@ -87,6 +87,7 @@ class Bubble:
         return self
 
     def __floordiv__(self, other: Bubble):
+        
         if not self.is_double() and not other.is_double():
             return Bubble(
                 [Bubble(self.data % other.data), Bubble(self.data // other.data)]
@@ -100,9 +101,9 @@ class Bubble:
             self.data = [
                 d1 // d2
                 for d1, d2 in itertools.zip_longest(
-                    self.data, other.data, fillvalue=1
-                )  # this isn't correct #actually this is super wrong because of reversed bubble order internally
-            ]
+                    reversed(self.data), reversed(other.data), fillvalue=1
+                )  
+            ].reverse() #could be correct but idk
         return self
 
     def __sizeof__(self) -> int:
