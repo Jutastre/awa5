@@ -1,3 +1,4 @@
 *.🌠
 .vscode/*
 __pycache__/*
+tools/in.txt
