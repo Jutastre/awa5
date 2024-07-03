@@ -67,11 +67,11 @@ class Bubble:
         return self
 
     def __mul__(self, other: Bubble):
-        if self.data == 1: #identity shortcuts
+        if self.data == 1:  # identity shortcuts
             return other
         if other.data == 1:
             return self
-        
+
         if not self.is_double() and not other.is_double():
             return Bubble(self.data * other.data)
         elif self.is_double() != other.is_double():
@@ -82,12 +82,14 @@ class Bubble:
         else:
             self.data = [
                 d1 * d2
-                for d1, d2 in itertools.zip_longest(reversed(self.data), reversed(other.data), fillvalue=1)
-            ].reverse() #think these reverses fixes order
+                for d1, d2 in itertools.zip_longest(
+                    reversed(self.data), reversed(other.data), fillvalue=1
+                )
+            ].reverse()  # think these reverses fixes order
         return self
 
     def __floordiv__(self, other: Bubble):
-        
+
         if not self.is_double() and not other.is_double():
             return Bubble(
                 [Bubble(self.data % other.data), Bubble(self.data // other.data)]
@@ -102,8 +104,8 @@ class Bubble:
                 d1 // d2
                 for d1, d2 in itertools.zip_longest(
                     reversed(self.data), reversed(other.data), fillvalue=1
-                )  
-            ].reverse() #could be correct but idk
+                )
+            ].reverse()  # could be correct but idk
         return self
 
     def __sizeof__(self) -> int:
@@ -182,8 +184,8 @@ class AwaVM:
         self.output_function: function = output_function
 
     @staticmethod
-    def _dirty_string_cleanup(string:str):
-        return re.sub(f"[^{AwaSCII_LOOKUP}]", '', string)
+    def _dirty_string_cleanup(string: str):
+        return re.sub(f"[^{AwaSCII_LOOKUP}]", "", string)
 
     @staticmethod
     def _AwaSCII_to_string(number) -> str:
@@ -286,7 +288,9 @@ class AwaVM:
                     self.abyss.append(Bubble([Bubble(value) for value in decoded]))
                 case 0x04:
                     input_string = AwaVM._dirty_string_cleanup(self.input_function())
-                    extracted_number_string = re.findall("~?[0-9]+", input_string)[0]  # can surely do this with a more appropriate regex function
+                    extracted_number_string = re.findall("~?[0-9]+", input_string)[
+                        0
+                    ]  # can surely do this with a more appropriate regex function
                     extracted_number_string = re.sub("~", "-", extracted_number_string)
                     # while not input_string.isnumeric():
                     #     input_string = input_string[:-1]  # THIS IS DUMB and wrong
