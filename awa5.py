@@ -137,9 +137,7 @@ class Bubble:
                 reversed([sub.as_number() for sub in self.data])
             )  # why is sub any type?
         else:
-            return re.sub(
-                "-", "~", str(self.data)
-            )
+            return re.sub("-", "~", str(self.data))
 
     def add(self, other: Bubble):
         if not self.is_double() and not other.is_double():
@@ -213,7 +211,7 @@ class AwaVM:
             if char == "1":
                 total += 1
         if negative:
-            return  total - pow(2,8)
+            return total - pow(2, 8)
         else:
             return total
 
@@ -248,7 +246,7 @@ class AwaVM:
         assert checksum == "awa"
         if len(program_data_raw) % 2 != 0:
             raise MalformedCodeException(f"Code length mismatch")
-        
+
         ## warnings for specific "common" errors i've seen in code
         if "  " in raw_program_text:
             raise MalformedCodeException(
@@ -258,7 +256,7 @@ class AwaVM:
             raise MalformedCodeException(
                 f"' wa' found in input at location {raw_program_text.find(' wa')} (after non-awatalk has been discarded)"
             )
-        
+
         binary_data = AwaVM._awa_string_to_binary_string(program_data_raw)
         program_data_ir = AwaVM._binary_string_to_ir(binary_data)
         return program_data_ir
