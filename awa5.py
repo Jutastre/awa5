@@ -178,8 +178,12 @@ class AwaVM:
         output_function: function = print_wrapper,
     ) -> None:
         self.abyss: list[Bubble] = []
-        self.input_function = input_function
-        self.output_function = output_function
+        self.input_function: function = input_function
+        self.output_function: function = output_function
+
+    @staticmethod
+    def _dirty_string_cleanup(string:str):
+        return re.sub(f"[^{AwaSCII_LOOKUP}]", '', string)
 
     @staticmethod
     def _AwaSCII_to_string(number) -> str:
@@ -278,13 +282,15 @@ class AwaVM:
                     self.output_function(bubble.string_as_number())
                 case 0x03:
                     input_string = self.input_function()
-                    decoded = AwaVM.string_to_AwaSCII(input_string)
+                    decoded = AwaVM._string_to_AwaSCII(input_string)
                     self.abyss.append(Bubble([Bubble(value) for value in decoded]))
                 case 0x04:
-                    input_string = self.input_function()
-                    while not input_string.isnumeric():
-                        input_string = input_string[:-1]  # THIS IS DUMB and wrong
-                    self.abyss.append(Bubble(int(input_string)))
+                    input_string = AwaVM._dirty_string_cleanup(self.input_function())
+                    extracted_number_string = re.findall("~?[0-9]+", input_string)[0]  # can surely do this with a more appropriate regex function
+                    extracted_number_string = re.sub("~", "-", extracted_number_string)
+                    # while not input_string.isnumeric():
+                    #     input_string = input_string[:-1]  # THIS IS DUMB and wrong
+                    self.abyss.append(Bubble(int(extracted_number_string)))
                 case 0x05:  # blow
                     self.abyss.append(Bubble(data))
                 case 0x06:  # submerge
