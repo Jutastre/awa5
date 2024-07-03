@@ -40,6 +40,9 @@ class Bubble:
         else:
             self.data = data
 
+    # Note that the dunder math methods return self but mutated
+    # Therefore relying on the bubble in question not being in the abyss
+
     def __add__(self, other: Bubble):
         if not self.is_double() and not other.is_double():
             return Bubble(self.data + other.data)
@@ -258,11 +261,11 @@ class AwaVM:
         ## warnings for specific "common" errors i've seen in code
         if "  " in raw_program_text:
             raise MalformedCodeException(
-                f"'  ' found in input at location {raw_program_text.find('  ')} (after non-awatalk has been discarded)"
+                f'"  " found in input at location {raw_program_text.find('  ')} (after non-awatalk has been discarded)'
             )
         if " wa" in raw_program_text:
             raise MalformedCodeException(
-                f"' wa' found in input at location {raw_program_text.find(' wa')} (after non-awatalk has been discarded)"
+                f'" wa" found in input at location {raw_program_text.find(' wa')} (after non-awatalk has been discarded)'
             )
 
         binary_data = AwaVM._awa_string_to_binary_string(program_data_raw)
