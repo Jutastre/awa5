@@ -1,4 +1,5 @@
-print "1 2 3 4 5":
+
+print "1 2 3 4 5" in a single bubble:
 awa awa awawa awawa awa awa awa awa awawa awawa awa awawa awawa awa awa awa awa awawa awa awa awa awawa awawa awa awa awa awa awa awawawa awa awawa awawa awa awa awa awa awa awawa awa awa awawa awawa awa awa awa awa awa awa awawa awawa awa awawa awa awawa awawa awa awa awawa awa:
 :
 1 2 3 4 5:
@@ -8,15 +9,19 @@ awa awa awawa awawawawawawa awawawa awa awa awa awawa awa:
 :
 ~10:
 
-print two numbers in a double bubble:
-awa awa awawa awawa awa awa awa awawa awawa awa awa awawa awawa awa awa awa awawa awawa awa awawa awa awawa awa awa awawa awa awa awa awawa awa:
-:
-10 10:
-
 test division 7/2:
 awa awa awawa awawa awa awa awa awa awa awawa awa awa awawa awawa awa awa awa awa awawawawa awawawawa awa awa awa awawa awa:
 :
 3 1:
+
+test add/sub/mul/div on (1,2,3,4,5) with 2:
+awa awa awawa awawa awa awa awa awa awawa awawa awa awawa awawa awa awa awa awa awawa awa awa awa awawa awawa awa awa awa awa awa awawawa awa awawa awawa awa awa awa awa awa awawa awa awa awawa awawa awa awa awa awa awa awa awawa awawa awa awawa awa awawa awawa awa awawa awawa awa awa awa awa awa awawa awa awawa awawawa awa awa awawa awa awa awawa awawa awa awawawawawawawa awa awa awa awawa awa awawa awawa awa awa awa awa awawa awawa awa awawa awawa awa awa awa awa awawa awa awa awa awawa awawa awa awa awa awa awa awawawa awa awawa awawa awa awa awa awa awa awawa awa awa awawa awawa awa awa awa awa awa awa awawa awawa awa awawa awa awawa awawa awa awawa awawa awa awa awa awa awa awawa awa awawawa awa awa awa awa awawa awa awa awawa awawa awa awawawawawawawa awa awa awa awawa awa awawa awawa awa awa awa awa awawa awawa awa awawa awawa awa awa awa awa awawa awa awa awa awawa awawa awa awa awa awa awa awawawa awa awawa awawa awa awa awa awa awa awawa awa awa awawa awawa awa awa awa awa awa awa awawa awawa awa awawa awa awawa awawa awa awawa awawa awa awa awa awa awa awawa awa awawawa awawa awa awa awawa awa awa awawa awawa awa awawawawawawawa awa awa awa awawa awa awawa awawa awa awa awa awa awawa awawa awa awawa awawa awa awa awa awa awawa awa awa awa awawa awawa awa awa awa awa awa awawawa awa awawa awawa awa awa awa awa awa awawa awa awa awawa awawa awa awa awa awa awa awa awawa awawa awa awawa awa awawa awawa awa awawa awawa awa awa awa awa awa awawa awa awawawawa awa awa awa awawa awa awa awawa awawa awa awawawawawawawa awa awa awa awawa:
+:
+3 4 5 6 7
+~1 0 1 2 3
+2 4 6 8 10
+0 1 1 0 1 1 2 0 2 1
+:
 
 print Awa (example code from esolang wiki):
 Awa awa awawa awawa awa awa awa awa awa awawa awa awa awawa awawa awa awa awa awa awa awawawa awa awawa awawa awa awa awa awa awa awa awa awa awawa awa awawa awa awa awawawa awa awa awa awawa:

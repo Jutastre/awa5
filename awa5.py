@@ -49,8 +49,8 @@ class Bubble:
         elif self.is_double() != other.is_double():
             if other.is_double():
                 self, other = other, self
-            simple = other.data
-            self.data = [d1 + simple for d1 in self.data]
+            #simple = other.data
+            self.data = [d1 + copy.deepcopy(other) for d1 in self.data]
         else:
             self.data = [
                 d1 + d2
@@ -66,8 +66,7 @@ class Bubble:
         elif self.is_double() != other.is_double():
             if other.is_double():
                 self, other = other, self
-            simple = other.data
-            self.data = [d1 - simple for d1 in self.data]
+            self.data = [d1 - copy.deepcopy(other) for d1 in self.data]
         else:
             self.data = [
                 d1 - d2
@@ -88,8 +87,7 @@ class Bubble:
         elif self.is_double() != other.is_double():
             if other.is_double():
                 self, other = other, self
-            simple = other.data
-            self.data = [d1 * simple for d1 in self.data]
+            self.data = [d1 * copy.deepcopy(other) for d1 in self.data]
         else:
             self.data = [
                 d1 * d2
@@ -108,8 +106,7 @@ class Bubble:
         elif self.is_double() != other.is_double():
             if other.is_double():
                 self, other = other, self
-            simple = other.data
-            self.data = [d1 // simple for d1 in self.data]
+            self.data = [d1 // copy.deepcopy(other) for d1 in self.data]
         else:
             self.data = [
                 d1 // d2
