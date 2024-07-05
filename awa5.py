@@ -249,7 +249,7 @@ class AwaVM:
         return ir
 
     @staticmethod
-    def _awa_string_to_ir(raw_program_text: str):
+    def awa_string_to_ir(raw_program_text: str):
         # I DIDNT wANNA USe REGEX I SWEAR
         raw_program_text = re.sub("[^AWaw ]", "", raw_program_text)
         checksum = raw_program_text[:3].lower()
@@ -432,7 +432,7 @@ class AwaVM:
             program_counter += 1
 
     def run_program(self, raw_program):
-        ir = AwaVM._awa_string_to_ir(raw_program)
+        ir = AwaVM.awa_string_to_ir(raw_program)
         self.execute_ir(ir)
 
 
