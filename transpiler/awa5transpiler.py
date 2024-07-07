@@ -243,7 +243,7 @@ def codegen(awa_ir, options = None) -> str:
 
     if exiting_block:
         code_pieces.append("    }\n")
-    code_pieces.append("    return 0;\n}")
+    code_pieces.append("    return 0;\n}\n")
 
 
     # construct header
@@ -388,8 +388,8 @@ def main(argv: list[str]):
     if options['verbose']:
         print(f"writing output to {output_filename}...")
     # write output to file:
-    if filename == 'stdout':
-        print(output, end='\0')
+    if output_filename == 'stdout':
+        print(output, end='')#, end='\0')
     else:
         with open(output_filename, 'w') as file:
             file.write(output)
