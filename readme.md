@@ -52,7 +52,7 @@ Execute it with a program named "program.🌠" in the same folder, or specify a 
 
 ### Tools
 
-tools/ir_to_awa.py translates from a simple intermediate representation into proper awatalk for the interpreter or transpiler to read.
+/tools/ir_to_awa.py translates from a simple intermediate representation into proper awatalk for the interpreter or transpiler to read.
 The transpiler can output the same IR if the flag -ir is used.
 
 IR example:
