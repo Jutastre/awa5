@@ -27,12 +27,14 @@ Options:
 
     -h, --help                      displays this text
 
+    -ir, --output-ir                outputs IR instead of c code
+
     --no-inline                     makes functions in output not static inline
 
     -o output_file                  specify output filename
 
     -O                              enable optimizer pass
-    
+
     --surround-on-merge-simple      makes merge instruction surround instead of
                                     add when both top bubbles are simple (this
                                     matches other implementations, but not the
@@ -317,7 +319,7 @@ def main(argv: list[str]):
                 options["inline"] = False
             case '--surround-on-merge-simple':
                 options["add_on_merge_simple"] = False
-            case '--output-ir':
+            case '-ir'|'--output-ir':
                 options["output_ir"] = True
             case '-f':
                 filename = argv[arg_idx + 1]
