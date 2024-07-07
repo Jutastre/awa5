@@ -14,6 +14,7 @@ source_file defaults to \"program.🌠\"
 output_file defaults to appending \".🌠\" to source_file unless source_file ends
 with \".c\", in which case the \".c\" will be replaced by \".🌠\".
 
+if source_file is "stdin" output will be read from stdin instead
 if output_file is "stdout" output will be written to stdout instead
 
 Options:
@@ -34,6 +35,9 @@ Options:
     -o output_file                  specify output filename
 
     -O                              enable optimizer pass
+
+    -p, --pipe                      sets source_file and output_file to stdin 
+                                    and stdout respectively
 
     --surround-on-merge-simple      makes merge instruction surround instead of
                                     add when both top bubbles are simple (this
@@ -327,6 +331,9 @@ def main(argv: list[str]):
                 output_filename = argv[arg_idx + 1]
             case '-O':
                 options["optimize"] = True
+            case '-p'|'--pipe':
+                filename = 'stdin'
+                output_filename = 'stdout'
             case '-v'|'--verbose':
                 options["verbose"] = True
             case _:
@@ -343,14 +350,19 @@ def main(argv: list[str]):
             output_filename = filename[:-2] + '.c'
 
     # read input file:
-    if options['verbose']:
+    if options['verbose'] and filename != 'stdin':
         print(f"opening file {filename}...")
-    try:
-        with open(filename) as file:
-            raw_program_text = file.read().strip()
-    except FileNotFoundError:
-        print(f'"{filename}" not found! exiting...')
-        quit()
+    
+    if filename == 'stdin':
+        raw_program_text = input().strip()
+    else:
+        try:
+            with open(filename) as file:
+                raw_program_text = file.read().strip()
+        except FileNotFoundError:
+            print(f'"{filename}" not found! exiting...')
+            quit()
+
 
     # decode:
 

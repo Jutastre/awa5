@@ -6,3 +6,13 @@ count and comparisons with empty/too short abyss
 
 does print num print numbers? why does it mention AwaSCII?
 also 'pops them all' is slightly ambigous
+
+ideas for future versions of AWA5:
+
+extend AwaSCII with an extra bit to fit carriage return + 63 emojis
+
+division without modulo and modulo without division would be neat
+
+some kind of syscall and/or websocket instructions as seen in other interpreters?
+
+

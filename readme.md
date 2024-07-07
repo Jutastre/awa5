@@ -45,6 +45,9 @@ Execute it with a program named "program.🌠" in the same folder, or specify a 
 
         -O                              enable optimizer pass
 
+        -p, --pipe                      sets source_file and output_file to stdin 
+                                        and stdout respectively
+
         --surround-on-merge-simple      makes merge instruction surround instead of
                                         add when both top bubbles are simple (this
                                         matches other implementations, but not the
