@@ -1,5 +1,6 @@
 *.🌠
 *.c
+*.ir
 .vscode/*
 **__pycache__/
 tools/in.txt
