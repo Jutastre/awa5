@@ -17,38 +17,38 @@ Execute it with a program named "program.🌠" in the same folder, or specify a 
 
 #### Usage and options:
 
-Usage: awa5transpiler.py [options] source_file
+    Usage: awa5transpiler.py [options] source_file
 
-source_file defaults to "program.🌠"
+    source_file defaults to "program.🌠"
 
-output_file defaults to appending ".🌠" to source_file unless source_file ends
-with ".c", in which case the ".c" will be replaced by ".🌠".
+    output_file defaults to appending ".🌠" to source_file unless source_file ends
+    with ".c", in which case the ".c" will be replaced by ".🌠".
 
-if output_file is "stdout" output will be written to stdout instead
+    if output_file is "stdout" output will be written to stdout instead
 
-Options:
+    Options:
 
-    -a, --parse-args                makes the output program read command line
-                                    arguments as input (once arguments are 
-                                    exhausted it will revert back to user 
-                                    input)
+        -a, --parse-args                makes the output program read command line
+                                        arguments as input (once arguments are 
+                                        exhausted it will revert back to user 
+                                        input)
 
-    -f source_file                  specify input file to read awatalk from
+        -f source_file                  specify input file to read awatalk from
 
-    -h, --help                      displays this text
+        -h, --help                      displays this text
 
-    -ir, --output-ir                outputs IR instead of c code
+        -ir, --output-ir                outputs IR instead of c code
 
-    --no-inline                     makes functions in output not static inline
+        --no-inline                     makes functions in output not static inline
 
-    -o output_file                  specify output filename
+        -o output_file                  specify output filename
 
-    -O                              enable optimizer pass
+        -O                              enable optimizer pass
 
-    --surround-on-merge-simple      makes merge instruction surround instead of
-                                    add when both top bubbles are simple (this
-                                    matches other implementations, but not the
-                                    specification)
+        --surround-on-merge-simple      makes merge instruction surround instead of
+                                        add when both top bubbles are simple (this
+                                        matches other implementations, but not the
+                                        specification)
 
 ### Tools
 
