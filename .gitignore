@@ -1,6 +1,6 @@
 *.🌠
 *.c
 .vscode/*
-__pycache__/*
+**__pycache__/
 tools/in.txt
 !transpiler/awa5c.c
