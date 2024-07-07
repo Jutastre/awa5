@@ -65,6 +65,10 @@ IR example:
     9 5
     1
 
+### issues.txt
+
+Just some random thoughts on what could be changed/improved in future iterations of the language.
+
 ## Credits
 
 Credit to Temp-Tempai (https://twitter.com/FlavrTemp/) for the language.
