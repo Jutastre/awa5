@@ -1,7 +1,7 @@
 # AWA5.0
 
 ## What is AWA5.0?
-AWA5.0 is a silly esolang related to vtuber Jelly Hoshiumi of Phase Connect.
+AWA5.0 is a silly esolang related to vtuber Jelly Hoshiumi of Phase-Connect.
 More info at https://esolangs.org/wiki/AWA5.0
 
 ## What is in this repo?
@@ -64,3 +64,9 @@ IR example:
     5 0
     9 5
     1
+
+## Credits
+
+Credit to Temp-Tempai (https://twitter.com/FlavrTemp/) for the language.
+
+Credit to nick 2 and Alex from the PhaseConnect Community discord for AWA5.0 programs used for testing.
