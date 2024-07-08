@@ -328,7 +328,7 @@ def optimizer(ir: list[tuple[int, int]], options) -> list[tuple[int, int]]:
     if verbose :
         print(f"after step 2: {len(ir)}")
 
-    # merge consecutive prints
+    # merge consecutive "print_string"s
 
     old_len = 0
 
@@ -342,8 +342,10 @@ def optimizer(ir: list[tuple[int, int]], options) -> list[tuple[int, int]]:
     if verbose :
         print(f"after step 3: {len(ir)}")
 
-    # find div -> pop -> pop and replace with "fast_modulo"
+    # start of unsafe optimizations
     if level >= 2:
+
+        # find div -> pop -> pop and replace with "fast_modulo"
         for idx in range(len(ir) - 2):
             if not ir[idx]:
                 continue
