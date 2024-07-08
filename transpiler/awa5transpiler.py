@@ -280,7 +280,7 @@ class OptimizerPatternMissException(BaseException):
 
 def optimizer(ir: list[tuple[int, int]], options) -> list[tuple[int, int]]:
 
-    if (level := options.get("optimize", 1) <= 0 ):
+    if (level := options.get("optimize", 1)) <= 0 :
         return ir
     if verbose :=options.get("verbose", False):
         print(f"running optimizer pass...")
