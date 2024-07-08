@@ -20,12 +20,15 @@ struct Bubble {
 };
 
 Bubble* abyss = NULL;
+
 """
 
 awascii_lookup = """char AwaSCII_LOOKUP[64] = "AWawJELYHOSIUMjelyhosiumPCNTpcntBDFGRbdfgr0123456789 .,!'()~_/;\\n";
+
 """
 
 reverse_awascii_lookup = """size_t REVERSE_AwaSCII_LOOKUP[127] = {56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 63, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 52, 55, 56, 56, 56, 56, 56, 56, 57, 58, 56, 56, 54, 56, 53, 61, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 56, 62, 56, 56, 56, 56, 56, 0, 32, 25, 33, 5, 34, 35, 8, 11, 4, 56, 6, 13, 26, 9, 24, 56, 36, 10, 27, 12, 56, 1, 56, 7, 56, 56, 56, 56, 56, 60, 56, 2, 37, 29, 38, 15, 39, 40, 18, 21, 14, 56, 16, 23, 30, 19, 28, 56, 41, 20, 31, 22, 56, 3, 56, 17, 56, 56, 56, 56, 59};
+
 """
 
 c_functions["delete"] = """static inline void delete_bubble_list(Bubble* head) {
@@ -47,6 +50,8 @@ static inline void delete_top_bubble(Bubble** abyss) {
     *abyss = to_delete->next;
     free(to_delete);
 }
+
+
 """
 
 dependencies[0x01] =('delete','awascii_lookup',)
@@ -65,6 +70,7 @@ static inline void Awa_01_print(Bubble** abyss) {
     Awa_01_recursive_helper(abyss);
     delete_top_bubble(abyss);
 }
+
 """
 
 c_code[0x01] = """Awa_01_print(&abyss);
@@ -89,6 +95,7 @@ static inline void Awa_02_print_num(Bubble** abyss) {
     Awa_02_recursive_helper(abyss);
     delete_top_bubble(abyss);
 }
+
 """
 
 c_code[0x02] = """Awa_02_print_num(&abyss);
@@ -103,6 +110,7 @@ c_functions[0x03] = """static inline void Awa_03_blow_input_string(Bubble** abys
         Awa_05_blow(abyss, REVERSE_AwaSCII_LOOKUP[input_buffer[idx]]);
     }
 }
+
 """
 
 c_functions["0x03 argparse"] = """static inline void Awa_03_blow_input_string(Bubble** abyss, int argc, char** argv, size_t * args_consumed) {
@@ -136,6 +144,7 @@ c_functions[0x04] = """static inline void Awa_04_blow_input_number(Bubble** abys
         Awa_05_blow(abyss, input_buffer);
     }
 }
+
 """
 
 c_functions["0x04 argparse"] = """static inline void Awa_04_blow_input_number(Bubble** abyss, int argc, char** argv, size_t * args_consumed) {
@@ -166,6 +175,7 @@ c_functions[0x05] = """static inline void Awa_05_blow(Bubble** abyss, int value)
     new_bubble->data.numerical = value;
     *abyss = new_bubble;
 }
+
 """
 
 c_code[0x05] = """Awa_05_blow(&abyss, %FUNCTION_PARAMETER%);
@@ -185,10 +195,10 @@ c_functions[0x06] = """static inline void Awa_06_submerge(Bubble** abyss, int va
             before_insertion = before_insertion->next;
         }
     }
-    Bubble* after_insertion = before_insertion->next;
+    to_insert->next = before_insertion->next;
     before_insertion->next = to_insert;
-    to_insert->next = after_insertion;
 }
+
 """
 
 c_code[0x06] = """Awa_06_submerge(&abyss, %FUNCTION_PARAMETER%);
@@ -210,6 +220,7 @@ c_functions[0x07] = """static inline void Awa_07_pop(Bubble** abyss) {
     free(*abyss);
     *abyss = sub_head;
 }
+
 """
 
 c_code[0x07] = """Awa_07_pop(&abyss);
@@ -217,7 +228,8 @@ c_code[0x07] = """Awa_07_pop(&abyss);
 
 
 
-c_functions[0x08] = """static inline Bubble* _recursive_duplication_helper(Bubble* old_head) {
+c_functions[0x08] = """
+static inline Bubble* _recursive_duplication_helper(Bubble* old_head) {
     Bubble* new_head = malloc(sizeof(Bubble));
     if (old_head->is_double) {
         new_head->data.sub_head = _recursive_duplication_helper(old_head->data.sub_head);
@@ -257,6 +269,8 @@ static inline void Awa_08_duplicate(Bubble** abyss) {
     new_bubble->next = (*abyss);
     (*abyss) = new_bubble;
 }
+
+
 """
 
 c_code[0x08] = """Awa_08_duplicate(&abyss);
@@ -281,6 +295,7 @@ c_functions[0x09] = """static inline void Awa_09_surround(Bubble** abyss, int va
     new_bubble->data.sub_head = old_head;
     *abyss = new_bubble;
 }
+
 """
 
 c_code[0x09] = """Awa_09_surround(&abyss, %FUNCTION_PARAMETER%);
@@ -320,6 +335,7 @@ c_functions[0x0A] = """static inline void Awa_0A_merge(Bubble** abyss) {
         (*abyss) = bubble2;
     }
 }
+
 """
 
 dependencies["alternative 0x0A"] = (0x09,)
@@ -356,6 +372,7 @@ c_functions["alternative 0x0A"] = """static inline void Awa_0A_merge(Bubble** ab
         Awa_09_surround(abyss, 2);
     }
 }
+
 """
 
 c_code[0x0A] = """Awa_0A_merge(&abyss);
@@ -363,7 +380,8 @@ c_code[0x0A] = """Awa_0A_merge(&abyss);
 
 dependencies[0x0B] = ("delete",)
 
-c_functions[0x0B] = """static inline void Awa_0B_add_recursive_helper_one_simple(Bubble** head_ptr, __int32_t simple_value) {
+c_functions[0x0B] = """
+static inline void Awa_0B_add_recursive_helper_one_simple(Bubble** head_ptr, __int32_t simple_value) {
     Bubble* current = *head_ptr;
     while (current != NULL) {
         if (current->is_double) {
@@ -430,6 +448,7 @@ static inline void Awa_0B_add_recursive_helper_both_double(Bubble*bubble1, Bubbl
         current2->next = NULL;
     }
 }
+
 static inline void Awa_0B_add(Bubble** abyss) {
     Bubble* bubble1 = (*abyss);
     Bubble* bubble2 = (*abyss)->next;
@@ -462,6 +481,8 @@ static inline void Awa_0B_add(Bubble** abyss) {
         free(bubble2);
     }
 }
+
+
 """
 
 c_code[0x0B] = """Awa_0B_add(&abyss);
@@ -469,7 +490,8 @@ c_code[0x0B] = """Awa_0B_add(&abyss);
 
 dependencies[0x0C] = ("delete",)
 
-c_functions[0x0C] = """static inline void Awa_0C_sub_recursive_helper_one_simple(Bubble** head_ptr, __int32_t simple_value, _Bool reversed) {
+c_functions[0x0C] = """
+static inline void Awa_0C_sub_recursive_helper_one_simple(Bubble** head_ptr, __int32_t simple_value, _Bool reversed) {
     Bubble* current = *head_ptr;
     while (current != NULL) {
         if (current->is_double) {
@@ -486,7 +508,6 @@ c_functions[0x0C] = """static inline void Awa_0C_sub_recursive_helper_one_simple
         current = current->next;
     }
 }
-
 
 static inline void Awa_0C_sub_recursive_helper_both_double(Bubble*bubble1, Bubble*bubble2) {
     //this kills the bubble(2)
@@ -546,7 +567,6 @@ static inline void Awa_0C_sub_recursive_helper_both_double(Bubble*bubble1, Bubbl
     }
 }
 
-
 static inline void Awa_0C_sub(Bubble** abyss) {
     Bubble* bubble1 = (*abyss);
     Bubble* bubble2 = (*abyss)->next;
@@ -582,6 +602,8 @@ static inline void Awa_0C_sub(Bubble** abyss) {
         free(bubble2);
     }
 }
+
+
 """
 
 
@@ -590,7 +612,8 @@ c_code[0x0C] = """Awa_0C_sub(&abyss);
 
 dependencies[0x0D] = ("delete",)
 
-c_functions[0x0D] = """static inline void Awa_0D_mul_recursive_helper_one_simple(Bubble** head_ptr, __int32_t simple_value) {
+c_functions[0x0D] = """
+static inline void Awa_0D_mul_recursive_helper_one_simple(Bubble** head_ptr, __int32_t simple_value) {
     Bubble* current = *head_ptr;
     while (current != NULL) {
         if (current->is_double) {
@@ -690,6 +713,8 @@ static inline void Awa_0D_mul(Bubble** abyss) {
         free(bubble2);
     }
 }
+
+
 """
 
 c_code[0x0D] = """Awa_0D_mul(&abyss);
@@ -697,7 +722,8 @@ c_code[0x0D] = """Awa_0D_mul(&abyss);
 
 dependencies[0x0E] = (0x09, "delete")
 
-c_functions[0x0E] = """static inline void Awa_0E_div_recursive_helper_one_simple(Bubble** head_ptr, __int32_t simple_value, _Bool reversed) {
+c_functions[0x0E] = """
+static inline void Awa_0E_div_recursive_helper_one_simple(Bubble** head_ptr, __int32_t simple_value, _Bool reversed) {
     Bubble* current = *head_ptr;
     while (current != NULL) {
         if (current->is_double) {
@@ -831,6 +857,8 @@ static inline void Awa_0E_div(Bubble** abyss) {
         free(bubble2);
     }
 }
+
+
 """
 
 c_code[0x0E] = """Awa_0E_div(&abyss);
@@ -851,6 +879,7 @@ c_functions[0x0F] = """static inline void Awa_0F_count(Bubble** abyss) {
     }
     Awa_05_blow(abyss, count);
 }
+
 """
 
 c_code[0x0F] = """Awa_0F_count(&abyss);
@@ -858,7 +887,9 @@ c_code[0x0F] = """Awa_0F_count(&abyss);
 
 c_functions[0x12] = """static inline _Bool Awa_12_equal(Bubble** abyss) {
     return ((*abyss)->data.numerical == (*abyss)->next->data.numerical);
-}"""
+}
+
+"""
 
 c_code[0x12] = """if (Awa_12_equal(&abyss)) {
 """
@@ -866,6 +897,7 @@ c_code[0x12] = """if (Awa_12_equal(&abyss)) {
 c_functions[0x13] = """static inline _Bool Awa_13_greater_than(Bubble** abyss) {
     return ((*abyss)->data.numerical > (*abyss)->next->data.numerical);
 }
+
 """
 
 c_code[0x13] = """if (Awa_13_greater_than(&abyss)) {
@@ -874,6 +906,7 @@ c_code[0x13] = """if (Awa_13_greater_than(&abyss)) {
 c_functions[0x14] = """static inline _Bool Awa_14_less_than(Bubble** abyss) {
     return ((*abyss)->data.numerical < (*abyss)->next->data.numerical);
 }
+
 """
 
 c_code[0x14] = """if (Awa_14_less_than(&abyss)) {
@@ -884,7 +917,8 @@ c_code["print_string"] = """printf("%FUNCTION_PARAMETER%");
 
 dependencies["fast_modulo"] = ("delete",)
 
-c_functions["fast_modulo"] = """static inline void Awa_fast_modulo_recursive_helper_one_simple(Bubble** head_ptr, __int32_t simple_value, _Bool reversed) {
+c_functions["fast_modulo"] = """
+static inline void Awa_fast_modulo_recursive_helper_one_simple(Bubble** head_ptr, __int32_t simple_value, _Bool reversed) {
     Bubble* current = *head_ptr;
     while (current != NULL) {
         if (current->is_double) {
@@ -990,6 +1024,8 @@ static inline void Awa_fast_modulo(Bubble** abyss) {
         free(bubble2);
     }
 }
+
+
 """
 
 c_code["fast_modulo"] = """Awa_fast_modulo(&abyss);
