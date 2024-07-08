@@ -36,6 +36,13 @@ Options:
 
     -O0                             disable optimizer pass
 
+    -O1                             enable safe optimizations; these can't 
+                                    break the behaviour of the program
+
+    -O2                             enable all optimizations; can break
+                                    programs in rare cases (never seen in the 
+                                    wild)
+
     -p, --pipe                      sets source_file and output_file to stdin 
                                     and stdout respectively
 
@@ -271,9 +278,15 @@ class OptimizerPatternMissException(BaseException):
     pass
 
 
-def optimizer(ir: list[tuple[int, int]]) -> list[tuple[int, int]]:
+def optimizer(ir: list[tuple[int, int]], options) -> list[tuple[int, int]]:
 
-    print(f"before optimizations: {len(ir)}")
+    if (level := options.get("optimize", 1) <= 0 ):
+        return ir
+    if verbose :=options.get("verbose", False):
+        print(f"running optimizer pass...")
+
+    if verbose :
+        print(f"before optimizations: {len(ir)}")
 
     # find blow -> print pairs and replace with "print_string char"
     for idx, (line1, line2) in enumerate(itertools.pairwise(ir)):
@@ -281,8 +294,8 @@ def optimizer(ir: list[tuple[int, int]]) -> list[tuple[int, int]]:
             ir[idx] = ("print_string", AwaSCII_LOOKUP[line1[1]].replace("\n", "\\n"))
             ir[idx + 1] = tuple()
     ir = ir_cleanup(ir)
-
-    print(f"after step 1: {len(ir)}")
+    if verbose :
+        print(f"after step 1: {len(ir)}")
     # find blow -> surround -> print sequences; replace with "print_string"
 
     for idx in range(len(ir) - 1, -1, -1):
@@ -312,8 +325,8 @@ def optimizer(ir: list[tuple[int, int]]) -> list[tuple[int, int]]:
             except OptimizerPatternMissException as ex:
                 pass
     ir = ir_cleanup(ir)
-
-    print(f"after step 2: {len(ir)}")
+    if verbose :
+        print(f"after step 2: {len(ir)}")
 
     # merge consecutive prints
 
@@ -326,21 +339,21 @@ def optimizer(ir: list[tuple[int, int]]) -> list[tuple[int, int]]:
                 ir[idx + 1] = ("print_string", ir[idx][1] + ir[idx + 1][1])
         ir = ir_cleanup(ir)
         old_len = len(ir)
-
-    print(f"after step 3: {len(ir)}")
+    if verbose :
+        print(f"after step 3: {len(ir)}")
 
     # find div -> pop -> pop and replace with "fast_modulo"
+    if level >= 2:
+        for idx in range(len(ir) - 2):
+            if not ir[idx]:
+                continue
+            if (ir[idx][0], ir[idx + 1][0], ir[idx + 2][0]) == (0x0E, 0x07, 0x07):
+                ir[idx] = ("fast_modulo", None)
+                ir[idx + 1], ir[idx + 2] = tuple(), tuple()
 
-    for idx in range(len(ir) - 2):
-        if not ir[idx]:
-            continue
-        if (ir[idx][0], ir[idx + 1][0], ir[idx + 2][0]) == (0x0E, 0x07, 0x07):
-            ir[idx] = ("fast_modulo", None)
-            ir[idx + 1], ir[idx + 2] = tuple(), tuple()
-
-    ir = ir_cleanup(ir)
-
-    print(f"after step 4: {len(ir)}")
+        ir = ir_cleanup(ir)
+        if verbose :
+            print(f"after step 4: {len(ir)}")
     return ir
 
 
@@ -465,7 +478,7 @@ def main(argv: list[str]):
     options["inline"] = True
     options["add_on_merge_simple"] = True
     options["output_ir"] = False
-    options["optimize"] = True
+    options["optimize"] = 1
     options["verbose"] = False
 
     # parse args: (this is not pretty, should write my own lib for this)
@@ -496,10 +509,12 @@ def main(argv: list[str]):
                 filename = argv[arg_idx + 1]
             case "-o":
                 output_filename = argv[arg_idx + 1]
-            case "-O1":
-                options["optimize"] = True
             case "-O0":
-                options["optimize"] = False
+                options["optimize"] = 0
+            case "-O1":
+                options["optimize"] = 1
+            case "-O2":
+                options["optimize"] = 2
             case "-p" | "--pipe":
                 filename = "stdin"
                 output_filename = "stdout"
@@ -542,11 +557,7 @@ def main(argv: list[str]):
 
     # generate code:
 
-    if options.get("optimize", False):
-
-        if options["verbose"]:
-            print(f"running optimizer pass...")
-        ir = optimizer(ir)
+    ir = optimizer(ir, options)
 
     if options.get("output_ir", False):
         output = "\n".join([" ".join([str(piece) for piece in line]) for line in ir])
