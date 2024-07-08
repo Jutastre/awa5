@@ -24,6 +24,7 @@ Execute it with a program named "program.🌠" in the same folder, or specify a 
     output_file defaults to appending ".🌠" to source_file unless source_file ends
     with ".c", in which case the ".c" will be replaced by ".🌠".
 
+    if source_file is "stdin" output will be read from stdin instead
     if output_file is "stdout" output will be written to stdout instead
 
     Options:
@@ -43,7 +44,7 @@ Execute it with a program named "program.🌠" in the same folder, or specify a 
 
         -o output_file                  specify output filename
 
-        -O                              enable optimizer pass
+        -O0                             disable optimizer pass
 
         -p, --pipe                      sets source_file and output_file to stdin 
                                         and stdout respectively

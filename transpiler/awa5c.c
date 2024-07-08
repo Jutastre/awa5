@@ -612,6 +612,112 @@ static inline void Awa_0D_mul(Bubble** abyss) {
     }
 }
 
+/*start*/
+
+static inline void Awa_0D_mul_recursive_helper_one_simple(Bubble** head_ptr, __int32_t simple_value) {
+    Bubble* current = *head_ptr;
+    while (current != NULL) {
+        if (current->is_double) {
+            Awa_0D_mul_recursive_helper_one_simple(&(current->data.sub_head), simple_value);
+        }
+        else {
+            current->data.numerical %= simple_value;
+        }
+        current = current->next;
+    }
+}
+
+static inline void Awa_fast_modulo_recursive_helper_both_double(Bubble*bubble1, Bubble*bubble2) {
+    //this kills the bubble(2)
+    Bubble* current1 = bubble1->data.sub_head;
+    Bubble* current2 = bubble2->data.sub_head;
+    if (bubble2->data.sub_head == NULL){
+        //free(bubble2);
+        return;
+    }
+    else if (bubble1->data.sub_head == NULL){
+        bubble1->data.sub_head = bubble2->data.sub_head;
+        //free(bubble2);
+        bubble2->data.sub_head = NULL;
+        return;
+    }
+    while (current1 != NULL && current2 != NULL) {
+
+        if (!current1->is_double && !current2->is_double) { // both simple
+            current1->data.numerical %= current2->data.numerical;
+        }
+        else if (current1->is_double != current2->is_double) { // 1 double
+            __int32_t simple_value;
+
+            //excise the simple
+            if (current1->is_double) {
+                simple_value = current2->data.numerical;
+            }
+            else {
+                simple_value = current1->data.numerical;
+
+                //move contents from bubble2 to bubble1:
+                current1->data.sub_head = current2->data.sub_head;
+                current1->is_double = true;
+                current2->is_double = false;
+                current2->data.sub_head = NULL; //can i skip this line? pretty sure i can, it wont be assumed to be a pointer ever since is_double is false
+            }
+            Awa_fast_modulo_recursive_helper_one_simple(&(current1->data.sub_head), simple_value);
+        }
+        else {  // both double
+            Awa_fast_modulo_recursive_helper_both_double(bubble1,bubble2);
+        }
+    }
+    //traverse AGAIN to find tail and make sure its on b1
+    current1 = bubble1->data.sub_head;
+    current2 = bubble2->data.sub_head;
+    while (current1->next != NULL && current2->next != NULL) {
+        current1 = current1->next;
+        current2 = current2->next;
+    }
+    //transfer tail if its on 2
+    if (current1->next == NULL){
+        current1->next = current2->next;
+        current2->next = NULL;
+    }
+}
+
+static inline void Awa_fast_modulo(Bubble** abyss) {
+    Bubble* bubble1 = (*abyss);
+    Bubble* bubble2 = (*abyss)->next;
+
+    if (!bubble1->is_double && !bubble2->is_double) { // both simple
+        bubble2->data.numerical = bubble1->data.numerical % bubble2->data.numerical;
+        free(bubble1);
+        (*abyss) = bubble2;
+    }
+    else if (bubble1->is_double != bubble2->is_double) { // 1 double
+        __int32_t simple_value;
+
+        //excise the simple
+        if (bubble1->is_double) {
+            simple_value = bubble2->data.numerical;
+            bubble1->next = bubble2->next;
+            free(bubble2);
+        }
+        else {
+            simple_value = bubble1->data.numerical;
+            (*abyss) = bubble2;
+            free(bubble1);
+        }
+        Awa_fast_modulo_recursive_helper_one_simple(&((*abyss)->data.sub_head), simple_value);
+    }
+    else {  // both double
+        Awa_fast_modulo_recursive_helper_both_double(bubble1,bubble2);
+        bubble1->next = bubble2->next;
+        delete_bubble_list(bubble2->data.sub_head);
+        free(bubble2);
+    }
+}
+
+
+
+/*end*/
 static inline void Awa_0E_div_recursive_helper_one_simple(Bubble** head_ptr, __int32_t simple_value, _Bool reversed) {
     Bubble* current = *head_ptr;
     while (current != NULL) {

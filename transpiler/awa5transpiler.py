@@ -2,7 +2,7 @@
 from __future__ import annotations
 import sys
 import re  # OH NO NOT THE REGEX
-import itertools #always import itertools, you'll need them sooner or later
+import itertools  # always import itertools, you'll need them sooner or later
 
 from Cblocks import *
 
@@ -34,7 +34,7 @@ Options:
 
     -o output_file                  specify output filename
 
-    -O                              enable optimizer pass
+    -O0                             disable optimizer pass
 
     -p, --pipe                      sets source_file and output_file to stdin 
                                     and stdout respectively
@@ -45,15 +45,143 @@ Options:
                                     specification)"""
 
 AwaSCII_LOOKUP = "AWawJELYHOSIUMjelyhosiumPCNTpcntBDFGRbdfgr0123456789 .,!'()~_/;\n"
-REVERSE_AwaSCII_LOOKUP = [56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 63, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 56, 52, 55, 56, 56, 56, 56, 56, 56, 57, 58, 56, 56, 54, 56, 53, 61, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 56, 62, 56, 56, 56, 56, 56, 0, 32, 25, 33, 5, 34, 35, 8, 11, 4, 56, 6, 13, 26, 9, 24, 56, 36, 10, 27, 12, 56, 1, 56, 7, 56, 56, 56, 56, 56, 60, 56, 2, 37, 29, 38, 15, 39, 40, 18, 21, 14, 56, 16, 23, 30, 19, 28, 56, 41, 20, 31, 22, 56, 3, 56, 17, 56, 56, 56, 56, 59]
+REVERSE_AwaSCII_LOOKUP = [
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    63,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    52,
+    55,
+    56,
+    56,
+    56,
+    56,
+    56,
+    56,
+    57,
+    58,
+    56,
+    56,
+    54,
+    56,
+    53,
+    61,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    56,
+    62,
+    56,
+    56,
+    56,
+    56,
+    56,
+    0,
+    32,
+    25,
+    33,
+    5,
+    34,
+    35,
+    8,
+    11,
+    4,
+    56,
+    6,
+    13,
+    26,
+    9,
+    24,
+    56,
+    36,
+    10,
+    27,
+    12,
+    56,
+    1,
+    56,
+    7,
+    56,
+    56,
+    56,
+    56,
+    56,
+    60,
+    56,
+    2,
+    37,
+    29,
+    38,
+    15,
+    39,
+    40,
+    18,
+    21,
+    14,
+    56,
+    16,
+    23,
+    30,
+    19,
+    28,
+    56,
+    41,
+    20,
+    31,
+    22,
+    56,
+    3,
+    56,
+    17,
+    56,
+    56,
+    56,
+    56,
+    59,
+]
+
+
 class MalformedCodeException(Exception):
     pass
 
 
 class Ingester:
-    def __init__(
-        
-    ) -> None:
+    def __init__() -> None:
         pass
 
     @staticmethod
@@ -123,86 +251,114 @@ class Ingester:
         ## warnings for specific "common" errors i've seen in code
         if "  " in raw_program_text:
             raise MalformedCodeException(
-                f'"  " found in input at location {raw_program_text.find('  ')} (after non-awatalk has been discarded)'
+                f"\"  \" found in input at location {raw_program_text.find('  ')} (after non-awatalk has been discarded)"
             )
         if " wa" in raw_program_text:
             raise MalformedCodeException(
-                f'" wa" found in input at location {raw_program_text.find(' wa')} (after non-awatalk has been discarded)'
+                f"\" wa\" found in input at location {raw_program_text.find(' wa')} (after non-awatalk has been discarded)"
             )
 
         binary_data = Ingester._awa_string_to_binary_string(program_data_raw)
         program_data_ir = Ingester._binary_string_to_ir(binary_data)
         return program_data_ir
 
+
 def ir_cleanup(ir):
     return [line for line in ir if len(line) != 0]
 
-def optimizer(ir:list[tuple[int,int]]) -> list[tuple[int,int]]:
 
-    #find blow -> print pairs and replace with "print_string char"
-    for idx,(line1,line2) in enumerate(itertools.pairwise(ir)):
+class OptimizerPatternMissException(BaseException):
+    pass
+
+
+def optimizer(ir: list[tuple[int, int]]) -> list[tuple[int, int]]:
+
+    print(f"before optimizations: {len(ir)}")
+
+    # find blow -> print pairs and replace with "print_string char"
+    for idx, (line1, line2) in enumerate(itertools.pairwise(ir)):
         if line1[0] == 5 and line2[0] == 1:
-            ir[idx] = ("print_string", AwaSCII_LOOKUP[line1[1]].replace("\n","\\n"))
+            ir[idx] = ("print_string", AwaSCII_LOOKUP[line1[1]].replace("\n", "\\n"))
             ir[idx + 1] = tuple()
     ir = ir_cleanup(ir)
 
-    #find blow -> surround -> print sequences
+    print(f"after step 1: {len(ir)}")
+    # find blow -> surround -> print sequences; replace with "print_string"
 
-    for idx in range(len(ir)-1,-1,-1):
-        
+    for idx in range(len(ir) - 1, -1, -1):
+
         if len(ir[idx]) != 0 and ir[idx][0] == 1:
             try:
                 if idx <= 1:
-                    raise Exception
-                if (ir[idx - 1][0] == 0x09):
+                    raise OptimizerPatternMissException
+                if ir[idx - 1][0] == 0x09:
                     surrounded = ir[idx - 1][1]
                     values_to_print = []
                     for offset in range(surrounded):
                         if idx - 2 - offset < 0:
-                            raise Exception
+                            raise OptimizerPatternMissException
                         if ir[idx - 2 - offset][0] != 5:
-                            raise Exception
+                            raise OptimizerPatternMissException
                         values_to_print.append(ir[idx - 2 - offset][1])
-                    #if you get this far without errors its g2g
-                    string_to_print = ''.join([AwaSCII_LOOKUP[n] for n in values_to_print]).replace("\n","\\n")
+                    # if you get this far without errors its g2g
+                    string_to_print = "".join(
+                        [AwaSCII_LOOKUP[n] for n in values_to_print]
+                    ).replace("\n", "\\n")
                     ir[idx] = ("print_string", string_to_print)
                     ir[idx - 1] = tuple()
                     for offset in range(surrounded):
                         ir[idx - 2 - offset] = tuple()
-                
-            except Exception as ex:
+
+            except OptimizerPatternMissException as ex:
                 pass
     ir = ir_cleanup(ir)
+
+    print(f"after step 2: {len(ir)}")
 
     # merge consecutive prints
 
     old_len = 0
 
     while len(ir) != old_len:
-        for idx,(line1,line2) in enumerate(itertools.pairwise(ir)):
-            if line1[0] == "print_string" and line2[0] == "print_string":
-                ir[idx] = ("print_string", line1[1] + line2[1])
+        for idx in range(len(ir) - 1):
+            if ir[idx][0] == "print_string" and ir[idx + 1][0] == "print_string":
+                ir[idx] = tuple()
+                ir[idx + 1] = ("print_string", ir[idx][1] + ir[idx + 1][1])
+        ir = ir_cleanup(ir)
         old_len = len(ir)
 
+    print(f"after step 3: {len(ir)}")
+
+    # find div -> pop -> pop and replace with "fast_modulo"
+
+    for idx in range(len(ir) - 2):
+        if not ir[idx]:
+            continue
+        if (ir[idx][0], ir[idx + 1][0], ir[idx + 2][0]) == (0x0E, 0x07, 0x07):
+            ir[idx] = ("fast_modulo", None)
+            ir[idx + 1], ir[idx + 2] = tuple(), tuple()
+
+    ir = ir_cleanup(ir)
+
+    print(f"after step 4: {len(ir)}")
     return ir
 
-def codegen(awa_ir, options = None) -> str:
+
+def codegen(awa_ir, options=None) -> str:
     if not options:
         options = {}
-
 
     # apply patches to codeset
 
     if not options.get("add_on_merge_simple", True):
         c_functions[0x0A] = c_functions["alternative 0x0A"]
         dependencies[0x0A] = dependencies["alternative 0x0A"]
-        
+
     if options.get("arg_parse", False):
         c_functions[0x03] = c_functions["0x03 argparse"]
         c_functions[0x04] = c_functions["0x04 argparse"]
         c_code[0x03] = c_code["0x03 argparse"]
         c_code[0x04] = c_code["0x04 argparse"]
-        
 
     head_pieces = []
     code_pieces = []
@@ -212,13 +368,15 @@ def codegen(awa_ir, options = None) -> str:
     # construct code body
 
     if options.get("arg_parse", False):
-        code_pieces.append("\n\nint main(int argc, char ** argv) {\n    size_t args_consumed = 1;\n")
+        code_pieces.append(
+            "\n\nint main(int argc, char ** argv) {\n    size_t args_consumed = 1;\n"
+        )
     else:
         code_pieces.append("\n\nint main() {\n")
 
     entering_block = False
     exiting_block = False
-    for instruction, parameter  in awa_ir:
+    for instruction, parameter in awa_ir:
         code_pieces.append("    ")
         instruction_set.add(instruction)
         match instruction:
@@ -226,16 +384,20 @@ def codegen(awa_ir, options = None) -> str:
                 code_pieces.append(f"lbl_{parameter}:\n")
             case 0x11:  # jmp
                 code_pieces.append(f"goto lbl_{parameter};\n")
-            case 0x12|0x13|0x14:  # eq/gt/lt
+            case 0x12 | 0x13 | 0x14:  # eq/gt/lt
                 code_pieces.append(c_code[instruction])
                 entering_block = True
             case 0x1F:  # exit
                 code_pieces.append("return 0;\n")
             case _:
-                code_pieces.append(c_code[instruction].replace("%FUNCTION_PARAMETER%", str(parameter)))
+                code_pieces.append(
+                    c_code[instruction].replace("%FUNCTION_PARAMETER%", str(parameter))
+                )
 
-        if exiting_block:   # this feels dirty but idk how else; should make it insert an "end" instruction into ir once i have an pass optimizer
-            code_pieces.append('    }\n')
+        if (
+            exiting_block
+        ):  # this feels dirty but idk how else; should make it insert an "end" instruction into ir once i have an pass optimizer
+            code_pieces.append("    }\n")
             exiting_block = False
         if entering_block:
             entering_block = False
@@ -245,19 +407,16 @@ def codegen(awa_ir, options = None) -> str:
         code_pieces.append("    }\n")
     code_pieces.append("    return 0;\n}\n")
 
-
     # construct header
 
-    #add dependencies:
+    # add dependencies:
 
     for instruction in instruction_set.copy():
         if instruction in dependencies:
             for dependency in dependencies[instruction]:
                 instruction_set.add(dependency)
 
-
     head_pieces.append(boilerplate)
-
 
     # these need to be added in correct order before other functions
     # / and / or removed to be able to sort the numerical instructions
@@ -273,20 +432,24 @@ def codegen(awa_ir, options = None) -> str:
     if 5 in instruction_set:
         head_pieces.append(c_functions[0x05])
         instruction_set.remove(0x05)
+    if "fast_modulo" in instruction_set:
+        head_pieces.append(c_functions["fast_modulo"])
+        instruction_set.remove("fast_modulo")
     if "print_string" in instruction_set:
         instruction_set.remove("print_string")
-    
-    for instruction in sorted(instruction_set): #rest can be added in numerical order
+
+    for instruction in sorted(instruction_set):  # rest can be added in numerical order
         if instruction in c_functions:
             head_pieces.append(c_functions[instruction])
 
-    header = ''.join(head_pieces)
-    body = ''.join(code_pieces)
+    header = "".join(head_pieces)
+    body = "".join(code_pieces)
 
     if not options.get("inline", True):
         header.replace("static inline ", "")
 
     return header + body
+
 
 def main(argv: list[str]):
     # initialize vars:
@@ -295,7 +458,7 @@ def main(argv: list[str]):
     output_filename = None
 
     options = {}
-    
+
     # option defaults:
 
     options["arg_parse"] = False
@@ -306,38 +469,46 @@ def main(argv: list[str]):
     options["verbose"] = False
 
     # parse args: (this is not pretty, should write my own lib for this)
-    if argv and argv[-1][0] != '-' and not (len(argv) >= 2 and (argv[-2] == '-o' or argv[-2] == '-f')):
+    if (
+        argv
+        and argv[-1][0] != "-"
+        and not (len(argv) >= 2 and (argv[-2] == "-o" or argv[-2] == "-f"))
+    ):
         # use last arg as input unless it follows -o
         filename = argv[-1]
         argv = argv[:-1]
 
     for arg_idx, arg in enumerate(argv):
         match arg:
-            case "-a"|"--parse-args":
+            case "-a" | "--parse-args":
                 options["arg_parse"] = True
-            case "-h"|"--help":
+            case "-h" | "--help":
                 print(USAGE_STRING)
                 print(HELP_STRING)
                 quit()
-            case '--no-inline':
+            case "--no-inline":
                 options["inline"] = False
-            case '--surround-on-merge-simple':
+            case "--surround-on-merge-simple":
                 options["add_on_merge_simple"] = False
-            case '-ir'|'--output-ir':
+            case "-ir" | "--output-ir":
                 options["output_ir"] = True
-            case '-f':
+            case "-f":
                 filename = argv[arg_idx + 1]
-            case '-o':
+            case "-o":
                 output_filename = argv[arg_idx + 1]
-            case '-O':
+            case "-O1":
                 options["optimize"] = True
-            case '-p'|'--pipe':
-                filename = 'stdin'
-                output_filename = 'stdout'
-            case '-v'|'--verbose':
+            case "-O0":
+                options["optimize"] = False
+            case "-p" | "--pipe":
+                filename = "stdin"
+                output_filename = "stdout"
+            case "-v" | "--verbose":
                 options["verbose"] = True
             case _:
-                if arg_idx == 0 or not (argv[arg_idx - 1] == '-f' or argv[arg_idx - 1] == '-o'):
+                if arg_idx == 0 or not (
+                    argv[arg_idx - 1] == "-f" or argv[arg_idx - 1] == "-o"
+                ):
                     print(USAGE_STRING)
                     quit()
 
@@ -347,13 +518,13 @@ def main(argv: list[str]):
     if not output_filename:
         output_filename = filename + ".c"
         if filename[-2:] == ".🌠":
-            output_filename = filename[:-2] + '.c'
+            output_filename = filename[:-2] + ".c"
 
     # read input file:
-    if options['verbose'] and filename != 'stdin':
+    if options["verbose"] and filename != "stdin":
         print(f"opening file {filename}...")
-    
-    if filename == 'stdin':
+
+    if filename == "stdin":
         raw_program_text = input().strip()
     else:
         try:
@@ -363,10 +534,9 @@ def main(argv: list[str]):
             print(f'"{filename}" not found! exiting...')
             quit()
 
-
     # decode:
 
-    if options['verbose']:
+    if options["verbose"]:
         print(f"decoding...")
     ir = Ingester._awa_string_to_ir(raw_program_text)
 
@@ -374,28 +544,29 @@ def main(argv: list[str]):
 
     if options.get("optimize", False):
 
-        if options['verbose']:
+        if options["verbose"]:
             print(f"running optimizer pass...")
         ir = optimizer(ir)
 
-    if options.get("output_ir",False):
-        output = "\n".join([' '.join(line) for line in ir])
+    if options.get("output_ir", False):
+        output = "\n".join([" ".join([str(piece) for piece in line]) for line in ir])
     else:
-        if options['verbose']:
+        if options["verbose"]:
             print(f"generating code...")
         output = codegen(ir, options)
 
-    if options['verbose']:
+    if options["verbose"]:
         print(f"writing output to {output_filename}...")
     # write output to file:
-    if output_filename == 'stdout':
-        print(output, end='')#, end='\0')
+    if output_filename == "stdout":
+        print(output, end="")  # , end='\0')
     else:
-        with open(output_filename, 'w') as file:
+        with open(output_filename, "w") as file:
             file.write(output)
 
-    if options['verbose']:
+    if options["verbose"]:
         print(f"Done!")
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])
