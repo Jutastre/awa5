@@ -21,8 +21,8 @@ Execute it with a program named "program.🌠" in the same folder, or specify a 
 
     source_file defaults to "program.🌠"
 
-    output_file defaults to appending ".🌠" to source_file unless source_file ends
-    with ".c", in which case the ".c" will be replaced by ".🌠".
+    output_file defaults to appending \".c\" to source_file unless source_file ends
+    with \".🌠\", in which case the \".🌠\" will be replaced by \".c\"
 
     if source_file is "stdin" output will be read from stdin instead
     if output_file is "stdout" output will be written to stdout instead
